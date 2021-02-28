@@ -483,6 +483,7 @@ struct LiveTracks {
 }
 
 struct ControlsState @0x97ff69c53601abf1 {
+  vEgo @0 :Float32;
   startMonoTime @48 :UInt64;
   canMonoTimes @21 :List(UInt64);
   longitudinalPlanMonoTime @28 :UInt64;
@@ -503,6 +504,8 @@ struct ControlsState @0x97ff69c53601abf1 {
   steeringAngleDesiredDeg @29 :Float32;
   curvature @37 :Float32;  # path curvature from vehicle model
   forceDecel @51 :Bool;
+  steerOverride @20 :Bool;
+  angleSteers @13 :Float32;
 
   # UI alerts
   alertText1 @24 :Text;
@@ -586,7 +589,6 @@ struct ControlsState @0x97ff69c53601abf1 {
   }
 
   # deprecated
-  vEgoDEPRECATED @0 :Float32;
   vEgoRawDEPRECATED @32 :Float32;
   aEgoDEPRECATED @1 :Float32;
   canMonoTimeDEPRECATED @16 :UInt64;
@@ -608,11 +610,9 @@ struct ControlsState @0x97ff69c53601abf1 {
   decelForTurnDEPRECATED @47 :Bool;
   decelForModelDEPRECATED @54 :Bool;
   awarenessStatusDEPRECATED @26 :Float32;
-  angleSteersDEPRECATED @13 :Float32;
   vCurvatureDEPRECATED @46 :Float32;
   mapValidDEPRECATED @49 :Bool;
   jerkFactorDEPRECATED @12 :Float32;
-  steerOverrideDEPRECATED @20 :Bool;
 }
 
 struct ModelDataV2 {
@@ -779,6 +779,11 @@ struct LateralPlan @0xe1e9318e2ae8b51e {
   desire @17 :Desire;
   laneChangeState @18 :LaneChangeState;
   laneChangeDirection @19 :LaneChangeDirection;
+
+
+  steerRatio @22 :Float32;
+  steerRateCost @23 :Float32;
+  steerActuatorDelay @24 :Float32;
 
   enum Desire {
     none @0;

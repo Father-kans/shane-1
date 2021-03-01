@@ -284,6 +284,8 @@ struct DeviceState @0xa4d8b5af2aa492eb {
   networkStrength @24 :NetworkStrength;
   carBatteryCapacityUwh @25 :UInt32;
 
+  wifiIpAddress @31 :Text;
+
   fanSpeedPercentDesired @10 :UInt16;
   started @11 :Bool;
   startedMonoTime @13 :UInt64;
@@ -519,6 +521,10 @@ struct ControlsState @0x97ff69c53601abf1 {
 
   cumLagMs @15 :Float32;
   canErrorCounter @57 :UInt32;
+
+  #Road Speed Limiter
+  roadLimitSpeed @58 :Int32;
+  roadLimitSpeedLeftDist @59 :Int32;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;
@@ -780,7 +786,7 @@ struct LateralPlan @0xe1e9318e2ae8b51e {
   laneChangeState @18 :LaneChangeState;
   laneChangeDirection @19 :LaneChangeDirection;
 
-
+  #Neokii's Ui
   steerRatio @22 :Float32;
   steerRateCost @23 :Float32;
   steerActuatorDelay @24 :Float32;
@@ -1211,6 +1217,8 @@ struct LiveParametersData {
   angleOffsetAverageDeg @3 :Float32;
   stiffnessFactor @4 :Float32;
   steerRatio @5 :Float32;
+  steerRateCost @10 :Float32;
+  steerActuatorDelay @11 :Float32;
   sensorValid @6 :Bool;
   yawRate @7 :Float32;
   posenetSpeed @8 :Float32;

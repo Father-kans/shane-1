@@ -102,6 +102,12 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     startupOneplus @82;
     processNotRunning @95;
 
+    #AutoHold
+    autoHoldActivated @96;
+
+    #Road speed Limiter
+    slowingDownSpeed @97;
+
     radarCanErrorDEPRECATED @15;
     radarCommIssueDEPRECATED @67;
     gasUnavailableDEPRECATED @3;
@@ -179,6 +185,7 @@ struct CarState {
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
 
+  #Kegman's 3Bar
   readdistancelines @37 :Float32;
   lkMode @38 :Bool;
   engineRPM @39 :Float32;
@@ -189,6 +196,9 @@ struct CarState {
   # blindspot sensors
   leftBlindspot @33 :Bool; # Is there something blocking the left lane change
   rightBlindspot @34 :Bool; # Is there something blocking the right lane change
+
+  # AutoHold
+  autoHoldActivated @40 :Bool;
 
   struct WheelSpeeds {
     # optional wheel speeds
@@ -329,6 +339,9 @@ struct CarControl {
       seatbeltUnbuckled @5;
       speedTooHigh @6;
       ldw @7;
+
+      # Autohold
+      autoHoldActivated @8;
     }
 
     enum AudibleAlert {

@@ -521,6 +521,7 @@ struct ControlsState @0x97ff69c53601abf1 {
 
   cumLagMs @15 :Float32;
   canErrorCounter @57 :UInt32;
+  decelForModel @60 :Bool;
 
   #Road Speed Limiter
   roadLimitSpeed @58 :Int32;

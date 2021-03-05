@@ -242,7 +242,7 @@ static void bb_ui_draw_basic_info(UIState *s)
                                                         scene->live_params.getAngleOffsetAverageDeg()
                                                         );
 
-    int x = s->viz_rect.x + 260;
+    int x = s->viz_rect.x + 210;
     int y = s->viz_rect.y + 55;
 
     nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
@@ -260,7 +260,7 @@ static void bb_ui_draw_debug(UIState *s)
 
     nvgTextAlign(s->vg, NVG_ALIGN_RIGHT | NVG_ALIGN_BASELINE);
 
-    const int text_x = 1650;
+    const int text_x = 1600;
 
     int longControlState = (int)scene->controls_state.getLongControlState();
     float vPid = scene->controls_state.getVPid();
@@ -543,7 +543,7 @@ static void ui_draw_df_button(UIState *s) {
 
   nvgFillColor(s->vg, nvgRGBA(255, 255, 255, 255));
   nvgFontSize(s->vg, 80);
-  nvgText(s->vg, btn_x, btn_y + 30, "DF", NULL);
+  nvgText(s->vg, btn_x, btn_y + 40, "DF", NULL);
 
   nvgFillColor(s->vg, nvgRGBA(255, 255, 255, 255));
   nvgFontSize(s->vg, 45);
@@ -575,7 +575,7 @@ static void ui_draw_ml_button(UIState *s) {
 
   nvgFillColor(s->vg, nvgRGBA(255, 255, 255, 255));
   nvgFontSize(s->vg, 60);
-  nvgText(s->vg, x + 180, y + btn_h / 8, "Toggle Model Long", NULL);
+  nvgText(s->vg, x + 170, y + btn_h / 8, "Toggle Model Long", NULL);
 }
 
 static void ui_draw_vision_header(UIState *s) {

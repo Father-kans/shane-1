@@ -111,6 +111,7 @@ typedef struct UIScene {
   bool frontview;
 
   float angleSteers;
+  int engineRPM;
 
   int lead_status;
   float lead_d_rel, lead_v_rel;

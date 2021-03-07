@@ -309,20 +309,20 @@ static void bb_ui_draw_debug(UIState *s)
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "GPS오차: %.2f미터", s->scene.gpsAccuracy);
+    snprintf(str, sizeof(str), "GPS: %.1f미터", s->scene.gpsAccuracy);
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
     snprintf(str, sizeof(str), "위성: %d 개", s->scene.satelliteCount);
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
+    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
     if (scene->lead_data[0].getStatus()) {
       snprintf(str, sizeof(str), "앞차간격: %d미터", (int)scene->lead_data[0].getDRel());
     } else {
-      snprintf(str, sizeof(str), "앞차시야밖");
+      snprintf(str, sizeof(str), "앞차범위밖");
     }
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
+    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
     y2 += height2;
 
     snprintf(str, sizeof(str), "현재조향각: %.1f°", (scene->lateral_plan.getSteeringAngleDeg()));
@@ -337,7 +337,11 @@ static void bb_ui_draw_debug(UIState *s)
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "Gas: %.3f, Brake: %.3f", gas, brake);
+    snprintf(str, sizeof(str), "엔진RPM: "%d", (s->scene.engineRPM)));
+    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
+    y2 += height2;
+
+    snprintf(str, sizeof(str), "Gas: %.2f, Brake: %.2f", gas, brake);
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
 }
 

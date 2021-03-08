@@ -337,7 +337,7 @@ static void bb_ui_draw_debug(UIState *s)
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "엔진RPM: "%d", (s->scene.engineRPM)));
+    snprintf(str, sizeof(str), "엔진RPM: %d", (s->scene.engineRPM));
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 

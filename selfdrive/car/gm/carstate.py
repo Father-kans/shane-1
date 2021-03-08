@@ -6,7 +6,6 @@ from opendbc.can.parser import CANParser
 from selfdrive.car.interfaces import CarStateBase
 from selfdrive.car.gm.values import DBC, CAR, AccState, CanBus, \
                                     CruiseButtons, STEER_THRESHOLD
-
 from selfdrive.kegman_kans_conf import kegman_kans_conf
 kegman_kans = kegman_kans_conf()
 
@@ -27,6 +26,7 @@ class CarState(CarStateBase):
     self.autoHoldActivated = False
     self.regenPaddlePressed = 0
     self.cruiseMain = False
+    self.engineRPM = 0
 
   def update(self, pt_cp, ch_cp): # this line for Brake Light
     ret = car.CarState.new_message()
@@ -90,6 +90,7 @@ class CarState(CarStateBase):
     ret.steerWarning = self.lkas_status not in [0, 1]
 
     ret.steeringTorqueEps = pt_cp.vl["PSCMStatus"]['LKATorqueDelivered']
+    self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM']
 
     if kegman_kans.conf['AutoHold'] == "1":
       self.autoHold = True
@@ -131,10 +132,11 @@ class CarState(CarStateBase):
       ("LKATorqueDeliveredStatus", "PSCMStatus", 0),
       ("TractionControlOn", "ESPStatus", 0),
       ("EPBClosed", "EPBStatus", 0),
-      ("CruiseMainOn", "ECMEngineStatus", 0),\
+      ("CruiseMainOn", "ECMEngineStatus", 0),
       ("LKAButton", "ASCMSteeringButton", 0),
       ("DistanceButton", "ASCMSteeringButton", 0),
       ("LKATorqueDelivered", "PSCMStatus", 0),
+      ("EngineRPM", "ECMEngineStatus", 0),
     ]
 
     if CP.carFingerprint == CAR.VOLT:

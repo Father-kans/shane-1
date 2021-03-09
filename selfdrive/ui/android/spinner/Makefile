@@ -1,9 +1,9 @@
 CC = clang
 CXX = clang++
 
-ROOT_DIR = ../../..
+ROOT_DIR = ../../../..
 PHONELIBS = $(ROOT_DIR)/phonelibs
-COMMON = $(ROOT)/selfdrive/common
+COMMON = $(ROOT_DIR)/selfdrive/common
 
 WARN_FLAGS = -Werror=implicit-function-declaration \
              -Werror=incompatible-pointer-types \
@@ -24,7 +24,7 @@ OBJS = spinner.o \
        $(COMMON)/framebuffer.o \
        $(COMMON)/util.o \
        $(PHONELIBS)/nanovg/nanovg.o \
-       $(COMMON)/spinner.o \
+       spinner.o \
        opensans_semibold.o \
        img_spinner_track.o \
        img_spinner_comma.o
@@ -63,10 +63,11 @@ img_spinner_comma.o: $(ROOT_DIR)/selfdrive/assets/img_spinner_comma.png
 	@echo "[ bin2o ] $@"
 	cd '$(dir $<)' && ld -r -b binary '$(notdir $<)' -o '$(abspath $@)'
 
-%.o: %.c
-	@echo "[ CC ] $@"
-	$(CC) $(CFLAGS) -MMD \
+%.o: %.cc
+	@echo "[ CXX ] $@"
+	$(CXX) $(CXXFLAGS) -MMD \
           -I../.. \
+          -I$(COMMON) \
           $(NANOVG_FLAGS) \
           -c -o '$@' '$<'
 

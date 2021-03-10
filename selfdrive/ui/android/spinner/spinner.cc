@@ -70,16 +70,16 @@ int main(int argc, char** argv) {
   int spinner_img = nvgCreateImageMem(vg, 0, (unsigned char*)_binary_img_spinner_track_png_start, _binary_img_spinner_track_png_end - _binary_img_spinner_track_png_start);
   assert(spinner_img >= 0);
 
-  int spinner_img_bgsw = 848; //가로크기
-  int spinner_img_bgsh = 848; //세로세로
-  int spinner_img_bgsx = ((fb_w/2)-(spinner_img_bgsw/2)); //X축 좌표
-  int spinner_img_bgsy= ((fb_h/2) -(spinner_img_bgsh/2)); //Y축 좌표
+  int spinner_img_bgsw = 1920; //가로크기
+  int spinner_img_bgsh = 1080; //세로세로
+  int spinner_img_bgsx = 0; //X축 좌표
+  int spinner_img_bgsy= 0; //Y축 좌표
 
-  int spinner_img_s = 360;
-  int spinner_img_x = ((fb_w/2)-(spinner_img_s/2));
-  int spinner_img_y = 260;
+  int spinner_img_s = 460; //스피너원 크기(지름)
+  int spinner_img_x = ((fb_w/2)-230); //180좌표 기준으로 지름의 반만큼 x좌표 좌로 50이동
+  int spinner_img_y = 310; // 260좌표기준으로 x축 이동만큼y좌표는 위로 50이동
   int spinner_img_xc = (fb_w/2);
-  int spinner_img_yc = (fb_h/2)-100;
+  int spinner_img_yc = (fb_h/2);
   int spinner_comma_img = nvgCreateImageMem(vg, 0, (unsigned char*)_binary_img_spinner_comma_png_start, _binary_img_spinner_comma_png_end - _binary_img_spinner_comma_png_start);
   assert(spinner_comma_img >= 0);
 

@@ -170,6 +170,7 @@ typedef struct UIState {
 
   // NVG
   NVGcontext *vg;
+  int font_sans_bold;
 
   // images
   std::map<std::string, int> images;

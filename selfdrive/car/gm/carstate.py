@@ -6,8 +6,7 @@ from opendbc.can.parser import CANParser
 from selfdrive.car.interfaces import CarStateBase
 from selfdrive.car.gm.values import DBC, CAR, AccState, CanBus, \
                                     CruiseButtons, STEER_THRESHOLD
-from selfdrive.kegman_kans_conf import kegman_kans_conf
-kegman_kans = kegman_kans_conf()
+
 
 class CarState(CarStateBase):
   def __init__(self, CP):
@@ -15,28 +14,11 @@ class CarState(CarStateBase):
     can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
     self.shifter_values = can_define.dv["ECMPRDNL"]["PRNDL"]
 
-    self.prev_distance_button = 0
-    self.prev_lka_button = 0
-    self.lka_button = 0
-    self.distance_button = 0
-    self.follow_level = 2
-    self.lkMode = True
-    self.autoHold = False
-    self.autoHoldActive = False
-    self.autoHoldActivated = False
-    self.regenPaddlePressed = 0
-    self.cruiseMain = False
-    self.engineRPM = 0
-
-  def update(self, pt_cp, ch_cp): # this line for Brake Light
+  def update(self, pt_cp):
     ret = car.CarState.new_message()
 
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]['ACCButtons']
-    self.prev_lka_button = self.lka_button
-    self.lka_button = pt_cp.vl["ASCMSteeringButton"]["LKAButton"]
-    self.prev_distance_button = self.distance_button
-    self.distance_button = pt_cp.vl["ASCMSteeringButton"]["DistanceButton"]
 
     ret.wheelSpeeds.fl = pt_cp.vl["EBCMWheelSpdFront"]['FLWheelSpd'] * CV.KPH_TO_MS
     ret.wheelSpeeds.fr = pt_cp.vl["EBCMWheelSpdFront"]['FRWheelSpd'] * CV.KPH_TO_MS
@@ -72,39 +54,22 @@ class CarState(CarStateBase):
 
     self.park_brake = pt_cp.vl["EPBStatus"]['EPBClosed']
     ret.cruiseState.available = bool(pt_cp.vl["ECMEngineStatus"]['CruiseMainOn'])
-    self.cruiseMain = ret.cruiseState.available
     ret.espDisabled = pt_cp.vl["ESPStatus"]['TractionControlOn'] != 1
     self.pcm_acc_status = pt_cp.vl["AcceleratorPedal2"]['CruiseState']
 
     ret.brakePressed = ret.brake > 1e-5
     # Regen braking is braking
     if self.car_fingerprint == CAR.VOLT:
-      self.regenPaddlePressed = bool(pt_cp.vl["EBCMRegenPaddle"]['RegenPaddle'])
-      ret.brakePressed = ret.brakePressed or self.regenPaddlePressed
+      ret.brakePressed = ret.brakePressed or bool(pt_cp.vl["EBCMRegenPaddle"]['RegenPaddle'])
 
     ret.cruiseState.enabled = self.pcm_acc_status != AccState.OFF
-    ret.cruiseState.standstill = False # self.pcm_acc_status == AccState.STANDSTILL
+    ret.cruiseState.standstill = self.pcm_acc_status == AccState.STANDSTILL
 
     # 0 - inactive, 1 - active, 2 - temporary limited, 3 - failed
     self.lkas_status = pt_cp.vl["PSCMStatus"]['LKATorqueDeliveredStatus']
     ret.steerWarning = self.lkas_status not in [0, 1]
 
-    ret.steeringTorqueEps = pt_cp.vl["PSCMStatus"]['LKATorqueDelivered']
-    self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM']
-
-    if kegman_kans.conf['AutoHold'] == "1":
-      self.autoHold = True
-    else:
-      self.autoHold = False
-
-    ret.autoHoldActivated = self.autoHoldActivated
-    # bellow line for Brake Light
-    ret.brakeLights = ch_cp.vl["EBCMFrictionBrakeStatus"]["FrictionBrakePressure"] != 0 or ret.brakePressed
-
     return ret
-
-  def get_follow_level(self):
-    return self.follow_level
 
   @staticmethod
   def get_can_parser(CP):
@@ -133,10 +98,6 @@ class CarState(CarStateBase):
       ("TractionControlOn", "ESPStatus", 0),
       ("EPBClosed", "EPBStatus", 0),
       ("CruiseMainOn", "ECMEngineStatus", 0),
-      ("LKAButton", "ASCMSteeringButton", 0),
-      ("DistanceButton", "ASCMSteeringButton", 0),
-      ("LKATorqueDelivered", "PSCMStatus", 0),
-      ("EngineRPM", "ECMEngineStatus", 0),
     ]
 
     if CP.carFingerprint == CAR.VOLT:
@@ -145,14 +106,3 @@ class CarState(CarStateBase):
       ]
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, [], CanBus.POWERTRAIN)
-
-# all bellows are for Brake Light
-  @staticmethod
-  def get_chassis_can_parser(CP):
-    # this function generates lists for signal, messages and initial values
-    signals = [
-      # sig_name, sig_address, default
-      ("FrictionBrakePressure", "EBCMFrictionBrakeStatus", 0),
-    ]
-
-    return CANParser(DBC[CP.carFingerprint]['chassis'], signals, [], CanBus.CHASSIS)

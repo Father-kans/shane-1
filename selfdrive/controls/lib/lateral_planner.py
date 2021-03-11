@@ -3,7 +3,6 @@ import math
 import numpy as np
 from common.realtime import sec_since_boot, DT_MDL
 from common.numpy_fast import interp
-from selfdrive.car.gm.values import CAR
 from selfdrive.swaglog import cloudlog
 from selfdrive.controls.lib.lateral_mpc import libmpc_py
 from selfdrive.controls.lib.drive_helpers import MPC_COST_LAT, MPC_N, CAR_ROTATION_RADIUS
@@ -13,14 +12,13 @@ from common.params import Params
 import cereal.messaging as messaging
 from cereal import log
 from common.op_params import opParams
-from selfdrive.ntune import ntune_get, ntune_isEnabled
 
 LaneChangeState = log.LateralPlan.LaneChangeState
 LaneChangeDirection = log.LateralPlan.LaneChangeDirection
 
 LOG_MPC = os.environ.get('LOG_MPC', False)
 
-LANE_CHANGE_SPEED_MIN = 11 * CV.MPH_TO_MS
+LANE_CHANGE_SPEED_MIN = 45 * CV.MPH_TO_MS
 LANE_CHANGE_TIME_MAX = 10.
 
 DESIRES = {
@@ -50,6 +48,7 @@ class LateralPlanner():
     self.LP = LanePlanner()
 
     self.last_cloudlog_t = 0
+    self.steer_rate_cost = CP.steerRateCost
 
     self.setup_mpc()
     self.solution_invalid_cnt = 0
@@ -66,16 +65,13 @@ class LateralPlanner():
     self.t_idxs = np.arange(TRAJECTORY_SIZE)
     self.y_pts = np.zeros(TRAJECTORY_SIZE)
 
-    self.steerRatio = 0.0
-    self.use_dynamic_sr = CP.carName in [CAR.VOLT]
-
     self.op_params = opParams()
     self.alca_nudge_required = self.op_params.get('alca_nudge_required')
     self.alca_min_speed = self.op_params.get('alca_min_speed') * CV.MPH_TO_MS
 
   def setup_mpc(self):
     self.libmpc = libmpc_py.libmpc
-    self.libmpc.init(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, ntune_get('steerRateCost'))
+    self.libmpc.init(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
 
     self.mpc_solution = libmpc_py.ffi.new("log_t *")
     self.cur_state = libmpc_py.ffi.new("state_t *")
@@ -96,18 +92,11 @@ class LateralPlanner():
 
     # Update vehicle model
     x = max(sm['liveParameters'].stiffnessFactor, 0.1)
-    if self.use_dynamic_sr:
-      sr = interp(abs(self.angle_steers_des_mpc), [5., 15.], [11.8, 16.2])
-    else:
-      if ntune_isEnabled('useLiveSteerRatio'):
-        sr = max(sm['liveParameters'].steerRatio, 0.1)
-      else:
-        sr = max(ntune_get('steerRatio'), 0.1)
     sr = max(sm['liveParameters'].steerRatio, 0.1)
     VM.update_params(x, sr)
     curvature_factor = VM.curvature_factor(v_ego)
     measured_curvature = -curvature_factor * math.radians(steering_wheel_angle_deg - steering_wheel_angle_offset_deg) / VM.sR
-    self.steerRatio = VM.sR
+
 
     md = sm['modelV2']
     self.LP.parse_model(sm['modelV2'])
@@ -202,7 +191,7 @@ class LateralPlanner():
     self.cur_state.curvature = interp(DT_MDL, self.t_idxs[:MPC_N+1], self.mpc_solution.curvature)
 
     # TODO this needs more thought, use .2s extra for now to estimate other delays
-    delay = ntune_get('steerActuatorDelay') + .2
+    delay = CP.steerActuatorDelay + .2
     current_curvature = self.mpc_solution.curvature[0]
     psi = interp(delay, self.t_idxs[:MPC_N+1], self.mpc_solution.psi)
     next_curvature_rate = self.mpc_solution.curvature_rate[0]
@@ -229,7 +218,7 @@ class LateralPlanner():
     mpc_nans = any(math.isnan(x) for x in self.mpc_solution.curvature)
     t = sec_since_boot()
     if mpc_nans:
-      self.libmpc.init(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, ntune_get('steerRateCost'))
+      self.libmpc.init(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, CP.steerRateCost)
       self.cur_state.curvature = measured_curvature
 
       if t > self.last_cloudlog_t + 5.0:
@@ -259,10 +248,6 @@ class LateralPlanner():
     plan_send.lateralPlan.desire = self.desire
     plan_send.lateralPlan.laneChangeState = self.lane_change_state
     plan_send.lateralPlan.laneChangeDirection = self.lane_change_direction
-
-    plan_send.lateralPlan.steerRatio = self.steerRatio
-    plan_send.lateralPlan.steerRateCost = ntune_get('steerRateCost')
-    plan_send.lateralPlan.steerActuatorDelay = ntune_get('steerActuatorDelay')
 
     pm.send('lateralPlan', plan_send)
 

@@ -19,7 +19,7 @@
 
 
 std::map<std::string, int> LS_TO_IDX = {{"off", 0}, {"audible", 1}, {"silent", 2}};
-std::map<std::string, int> DF_TO_IDX = {{"traffic", 0}, {"relaxed", 1}, {"roadtrip", 2}, {"auto", 3}};
+std::map<std::string, int> DF_TO_IDX = {{"traffic", 0}, {"relaxed", 1}, {"stock", 2}, {"auto", 3}};
 
 
 int write_param_float(float param, const char* param_name, bool persistent_param) {
@@ -78,8 +78,7 @@ static void ui_init_vision(UIState *s) {
 
 void ui_init(UIState *s) {
   s->sm = new SubMaster({"modelV2", "controlsState", "uiLayoutState", "liveCalibration", "radarState", "deviceState", "roadCameraState", "liveLocationKalman",
-                         "pandaState", "carParams", "driverState", "driverMonitoringState", "sensorEvents", "carState", "ubloxGnss",
-                                                 "carControl", "lateralPlan", "gpsLocationExternal", "liveParameters"});
+                         "pandaState", "carParams", "driverState", "driverMonitoringState", "sensorEvents", "carState", "ubloxGnss"});
 
   s->started = false;
   s->status = STATUS_OFFROAD;
@@ -164,22 +163,15 @@ static void update_sockets(UIState *s) {
   UIScene &scene = s->scene;
   if (s->started && sm.updated("controlsState")) {
     scene.controls_state = sm["controlsState"].getControlsState();
-    s->scene.angleSteers  = scene.controls_state.getAngleSteers();
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
-    s->scene.engineRPM = scene.car_state.getEngineRPM();
   }
   if (sm.updated("radarState")) {
     auto radar_state = sm["radarState"].getRadarState();
     const auto line = sm["modelV2"].getModelV2().getPosition();
     update_lead(s, radar_state, line, 0);
     update_lead(s, radar_state, line, 1);
-    scene.lead_data[0] = radar_state.getLeadOne();
-    scene.lead_data[1] = radar_state.getLeadTwo();
-    s->scene.lead_v_rel = scene.lead_data[0].getVRel();
-    s->scene.lead_d_rel = scene.lead_data[0].getDRel();
-    s->scene.lead_status = scene.lead_data[0].getStatus();
   }
   if (sm.updated("liveCalibration")) {
     scene.world_objects_visible = true;
@@ -208,19 +200,6 @@ static void update_sockets(UIState *s) {
   }
   if (sm.updated("deviceState")) {
     scene.deviceState = sm["deviceState"].getDeviceState();
-    s->scene.cpuTemp = scene.deviceState.getCpuTempC()[0];
-  }
-  if (sm.updated("lateralPlan")) {
-    scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
-  }
-  if (sm.updated("gpsLocationExternal")) {
-    auto data = sm["gpsLocationExternal"].getGpsLocationExternal();
-    s->scene.gpsAccuracy = data.getAccuracy();
-
-    if (s->scene.gpsAccuracy > 100)
-      s->scene.gpsAccuracy = 99.99;
-    else if (s->scene.gpsAccuracy == 0)
-      s->scene.gpsAccuracy = 99.8;
   }
   if (sm.updated("pandaState")) {
     auto pandaState = sm["pandaState"].getPandaState();
@@ -234,12 +213,6 @@ static void update_sockets(UIState *s) {
     if (data.which() == cereal::UbloxGnss::MEASUREMENT_REPORT) {
       scene.satelliteCount = data.getMeasurementReport().getNumMeas();
     }
-  }
-  if(sm.updated("liveParameters")) {
-    scene.live_params = sm["liveParameters"].getLiveParameters();
-  }
-  if(sm.updated("carControl")) {
-    scene.car_control = sm["carControl"].getCarControl();
   }
   if (sm.updated("liveLocationKalman")) {
     scene.gpsOK = sm["liveLocationKalman"].getLiveLocationKalman().getGpsOK();

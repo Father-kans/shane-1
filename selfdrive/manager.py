@@ -21,7 +21,7 @@ from common.spinner import Spinner
 from common.text_window import TextWindow
 import selfdrive.crash as crash
 from selfdrive.hardware import HARDWARE, EON, PC, TICI
-from selfdrive.hardware.eon.apk import update_apks, pm_apply_packages, start_offroad, pm_grant, system
+from selfdrive.hardware.eon.apk import update_apks, pm_apply_packages, start_offroad
 from selfdrive.swaglog import cloudlog, add_logentries_handler
 from selfdrive.version import version, dirty
 
@@ -84,7 +84,7 @@ def build():
   nproc = os.cpu_count()
   j_flag = "" if nproc is None else f"-j{nproc - 1}"
 
-  for retry in [False]:
+  for retry in [True, False]:
     scons = subprocess.Popen(["scons", j_flag], cwd=BASEDIR, env=env, stderr=subprocess.PIPE)
 
     compile_output = []
@@ -119,8 +119,8 @@ def build():
             print("....%d" % i)
             time.sleep(1)
           subprocess.check_call(["scons", "-c"], cwd=BASEDIR, env=env)
-          shutil.rmtree("/tmp/scons_cache", ignore_errors=True)
-          shutil.rmtree("/data/scons_cache", ignore_errors=True)
+          # shutil.rmtree("/tmp/scons_cache", ignore_errors=True)
+          # shutil.rmtree("/data/scons_cache", ignore_errors=True)
         else:
           print("scons build failed after retry")
           sys.exit(1)
@@ -155,18 +155,18 @@ from selfdrive.launcher import launcher
 # comment out anything you don't want to run
 managed_processes = {
   "thermald": "selfdrive.thermald.thermald",
-  #"uploader": "selfdrive.loggerd.uploader",
+  "uploader": "selfdrive.loggerd.uploader",
   "deleter": "selfdrive.loggerd.deleter",
   "controlsd": "selfdrive.controls.controlsd",
   "plannerd": "selfdrive.controls.plannerd",
   "radard": "selfdrive.controls.radard",
   "dmonitoringd": "selfdrive.monitoring.dmonitoringd",
   "ubloxd": ("selfdrive/locationd", ["./ubloxd"]),
-  #"loggerd": ("selfdrive/loggerd", ["./loggerd"]),
-  #"logmessaged": "selfdrive.logmessaged",
+  "loggerd": ("selfdrive/loggerd", ["./loggerd"]),
+  "logmessaged": "selfdrive.logmessaged",
   "locationd": "selfdrive.locationd.locationd",
-  #"tombstoned": "selfdrive.tombstoned",
-  #"logcatd": ("selfdrive/logcatd", ["./logcatd"]),
+  "tombstoned": "selfdrive.tombstoned",
+  "logcatd": ("selfdrive/logcatd", ["./logcatd"]),
   "proclogd": ("selfdrive/proclogd", ["./proclogd"]),
   "pandad": "selfdrive.pandad",
   "ui": ("selfdrive/ui", ["./ui"]),
@@ -175,10 +175,11 @@ managed_processes = {
   "camerad": ("selfdrive/camerad", ["./camerad"]),
   "sensord": ("selfdrive/sensord", ["./sensord"]),
   "clocksd": ("selfdrive/clocksd", ["./clocksd"]),
-  #"updated": "selfdrive.updated",
+  "updated": "selfdrive.updated",
   "dmonitoringmodeld": ("selfdrive/modeld", ["./dmonitoringmodeld"]),
   "modeld": ("selfdrive/modeld", ["./modeld"]),
   "rtshield": "selfdrive.rtshield",
+  # "lanespeedd": "selfdrive.controls.lib.lane_speed",
 }
 
 daemon_processes = {
@@ -238,6 +239,7 @@ car_started_processes = [
   'locationd',
   'clocksd',
   'logcatd',
+  # 'lanespeedd',
 ]
 
 driver_view_processes = [
@@ -434,18 +436,11 @@ def manager_init():
 
 def manager_thread():
 
-  shutdownd = Process(name="shutdownd", target=launcher, args=("selfdrive.shutdownd",))
-  shutdownd.start()
-
-  pm_grant("com.neokii.openpilot", "android.permission.ACCESS_FINE_LOCATION")
-  system("am startservice com.neokii.oproadlimit/.MainService")
-  system("am startservice com.neokii.openpilot/.MainService")
-
   cloudlog.info("manager start")
   cloudlog.info({"environ": os.environ})
 
   # save boot log
-  # subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
+  subprocess.call("./bootlog", cwd=os.path.join(BASEDIR, "selfdrive/loggerd"))
 
   # start daemon processes
   for p in daemon_processes:
@@ -456,9 +451,10 @@ def manager_thread():
     start_managed_process(p)
 
   # start offroad
-  if EON and "QT" not in os.environ:
+  if EON:
     pm_apply_packages('enable')
     start_offroad()
+  spinner.close()
 
   if os.getenv("NOBOARD") is not None:
     del managed_processes["pandad"]
@@ -537,9 +533,9 @@ def manager_prepare():
   total = 100.0 - (0 if PREBUILT else MAX_BUILD_PROGRESS)
 
   for i, p in enumerate(managed_processes):
+    prepare_managed_process(p)
     perc = (100.0 - total) + total * (i + 1) / len(managed_processes)
     spinner.update_progress(perc, 100.)
-    prepare_managed_process(p)
 
 def main():
   params = Params()
@@ -549,7 +545,7 @@ def main():
     ("CommunityFeaturesToggle", "0"),
     ("CompletedTrainingVersion", "0"),
     ("IsRHD", "0"),
-    ("IsMetric", "1"),
+    ("IsMetric", "0"),
     ("RecordFront", "0"),
     ("HasAcceptedTerms", "0"),
     ("HasCompletedSetup", "0"),
@@ -578,7 +574,6 @@ def main():
     update_apks()
   manager_init()
   manager_prepare()
-  spinner.close()
 
   if os.getenv("PREPAREONLY") is not None:
     return

@@ -14,7 +14,7 @@ from common.numpy_fast import clip, interp
 from common.params import Params
 from common.realtime import DT_TRML, sec_since_boot
 from selfdrive.controls.lib.alertmanager import set_offroad_alert
-from selfdrive.hardware import EON, HARDWARE
+from selfdrive.hardware import EON, TICI, HARDWARE
 from selfdrive.loggerd.config import get_available_percent
 from selfdrive.pandad import get_expected_signature
 from selfdrive.swaglog import cloudlog
@@ -22,6 +22,8 @@ from selfdrive.thermald.power_monitoring import PowerMonitoring
 from selfdrive.version import get_git_branch, terms_version, training_version
 
 FW_SIGNATURE = get_expected_signature()
+
+DISABLE_LTE_ONROAD = os.path.exists("/persist/disable_lte_onroad")
 
 ThermalStatus = log.DeviceState.ThermalStatus
 NetworkType = log.DeviceState.NetworkType
@@ -181,6 +183,7 @@ def thermald_thread():
   handle_fan = None
   is_uno = False
   has_relay = False
+  ui_running_prev = False
 
   params = Params()
   power_monitor = PowerMonitoring()
@@ -297,12 +300,12 @@ def thermald_thread():
 
     # Show update prompt
     try:
-      last_update = datetime.datetime.fromisoformat(params.get("LastUpdateTime", encoding='utf8'))
+      last_update = now #datetime.datetime.fromisoformat(params.get("LastUpdateTime", encoding='utf8'))
     except (TypeError, ValueError):
       last_update = now
     dt = now - last_update
 
-    update_failed_count = params.get("UpdateFailedCount")
+    update_failed_count = 0 #params.get("UpdateFailedCount")
     update_failed_count = 0 if update_failed_count is None else int(update_failed_count)
     last_update_exception = params.get("LastUpdateException", encoding='utf8')
 
@@ -329,7 +332,7 @@ def thermald_thread():
       set_offroad_alert_if_changed("Offroad_ConnectivityNeeded", False)
       set_offroad_alert_if_changed("Offroad_ConnectivityNeededPrompt", False)
 
-    startup_conditions["up_to_date"] = params.get("Offroad_ConnectivityNeeded") is None or params.get("DisableUpdates") == b"1"
+    #startup_conditions["up_to_date"] = params.get("Offroad_ConnectivityNeeded") is None or params.get("DisableUpdates") == b"1"
     startup_conditions["not_uninstalling"] = not params.get("DoUninstall") == b"1"
     startup_conditions["accepted_terms"] = params.get("HasAcceptedTerms") == terms_version
 

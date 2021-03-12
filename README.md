@@ -12,7 +12,7 @@ Want to request a feature or create a bug report? [Open an issue here!](https://
 ### Behavior Changes
 * [**Dynamic follow (now with profiles!)**](#dynamic-follow-3-profiles) - 3 + auto profiles to control distance
   * [**`auto-df` model for automatic distance profile switching**](#Automatic-DF-profile-switching)
-* **Lane Speed**  [***❗ALL LANE SPEED FEATURES REMOVED TEMPORARILY❗***](https://github.com/ShaneSmiskol/openpilot/blob/SA-082/SA_RELEASES.md#stock-additions-v066---2020-02-27-082)
+* **Lane Speed**  [***❗ALL LANE SPEED FEATURES REMOVED TEMPORARILY❗***](https://github.com/ShaneSmiskol/openpilot/blob/stock_additions/SA_RELEASES.md#stock-additions-v066---2020-02-27-082)
   * [**Lane Speed Alerts**](#Lane-Speed-alerts) - alerts for when an adjacent lane is faster
   * [**Dynamic camera offsetting**](#Dynamic-camera-offset-based-on-oncoming-traffic) - moves you over if adjacent lane has oncoming traffic
 * [**Dynamic gas**](#dynamic-gas) - smoother gas control
@@ -43,7 +43,7 @@ Dynamic follow works if openpilot can control your vehicle's gas and brakes (lon
 Just use the button on the button right of the screen while driving to change between these profiles:
   * [`traffic`](#Videos) - Meant to keep you a bit closer in traffic, hopefully reducing cut-ins. Always be alert, as you are with any driving assistance software.
   * `relaxed` - This is the default dynamic follow profile for casual driving.
-  * `roadtrip` - This profile is for road trips where you're mainly on two lane highways and don't want to be following particularly closely; at night for example.
+  * `stock` - This is the stock 1.8 second profile default in stock openpilot, with no dynamic follow mods. The previous roadtrip profile was closer than a *true road trip* profile, this is more in line with that intention.
   * [`auto`](#Automatic-DF-profile-switching) - The auto dynamic follow model was trained on about an hour of me manually cycling through the different profiles based on driving conditions, this profile tries to replicate those decisions entirely on its own.
 
 <p align="center">
@@ -66,7 +66,7 @@ Resources:
 ### Lane Speed alerts
 This feature alerts you of faster-travelling adjacent lanes and can be configured using the on-screen *LS* button on the bottom right to either be disabled, audible, or silent.
 
-The idea behind this feature is since we often become very relaxed behind the wheel when being driven by openpilot, we don't always notice when we've become stuck behind a slower-moving vehicle. When either the left or right adjacent lane is moving faster than your current lane, LaneSpeed alerts the user that a faster lane is available so that they can make a lane change, overtaking the slower current lane. Thus saving time in the long run on long roadtrips or in general highway driving!
+The idea behind this feature is since we often become very relaxed behind the wheel when being driven by openpilot, we don't always notice when we've become stuck behind a slower-moving vehicle. When either the left or right adjacent lane is moving faster than your current lane, LaneSpeed alerts the user that a faster lane is available so that they can make a lane change, overtaking the slower current lane. Thus saving time in the long run on long road trips or in general highway driving!
 
 The original idea is thanks to [Greengree#5537](https://github.com/greengree) on Discord. This feature is available at 35 mph and up.
 
@@ -138,7 +138,6 @@ Here are the main parameters you can change with this fork:
   - `upload_on_hotspot`: Controls whether your EON will upload driving data on your phone's hotspot
   - [`update_behavior`](#Automatic-updates): `off` will never update, `alert` shows an alert on-screen. `auto` will reboot the device when an update is seen
   - `disengage_on_gas`: Whether you want openpilot to disengage on gas input or not
-  - `slowdown_for_curves`: Whether your car will slow down for curves using the old planner code from 0.5/0.6
 - **Dynamic params**:
   - `dynamic_gas`: Whether to use [dynamic gas](#dynamic-gas) if your car is supported
   - `global_df_mod` **`(live!)`**: The multiplier for the current distance used by dynamic follow. The range is limited from 0.85 to 2.5. Smaller values will get you closer, larger will get you farther. This is applied to ALL profiles!
@@ -205,6 +204,7 @@ Most of the branches on this fork are development branches I use as various open
 * [Stock Additions 0.7.5](https://github.com/ShaneSmiskol/openpilot-archive/tree/stock_additions-075)
 * [Stock Additions 0.7.7](https://github.com/ShaneSmiskol/openpilot-archive/tree/stock_additions-077)
 * [Stock Additions 0.7.10](https://github.com/ShaneSmiskol/openpilot-archive/tree/stock_additions-0710)
+* [Stock Additions 0.8](https://github.com/ShaneSmiskol/openpilot/tree/stock_additions-08)
 
 ---
 ### Videos

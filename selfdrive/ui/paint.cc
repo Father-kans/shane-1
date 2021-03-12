@@ -301,43 +301,43 @@ static void bb_ui_draw_debug(UIState *s)
 
     const int text_x2 = 1870;
 
-    snprintf(str, sizeof(str), "CPUì˜¨ë„: %.0fÂ°C", (round((s->scene.cpuTemp))));
+    snprintf(str, sizeof(str), "CPU¿Âµµ: %.0f¡ÆC", (round((s->scene.cpuTemp))));
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "Battì˜¨ë„: %.0fÂ°C", scene->deviceState.getBatteryTempC());
+    snprintf(str, sizeof(str), "Batt¿Âµµ: %.0f¡ÆC", scene->deviceState.getBatteryTempC());
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "GPS: %.1fë¯¸í„°", s->scene.gpsAccuracy);
+    snprintf(str, sizeof(str), "GPS: %.1f¹ÌÅÍ", s->scene.gpsAccuracy);
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "ìœ„ì„±: %d ê°œ", s->scene.satelliteCount);
+    snprintf(str, sizeof(str), "À§¼º: %d °³", s->scene.satelliteCount);
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
     if (scene->lead_data[0].getStatus()) {
-      snprintf(str, sizeof(str), "ì•žì°¨ê°„ê²©: %dë¯¸í„°", (int)scene->lead_data[0].getDRel());
+      snprintf(str, sizeof(str), "¾ÕÂ÷°£°Ý: %d¹ÌÅÍ", (int)scene->lead_data[0].getDRel());
     } else {
-      snprintf(str, sizeof(str), "ì•žì°¨ë²”ìœ„ë°–");
+      snprintf(str, sizeof(str), "¾ÕÂ÷¹üÀ§¹Û");
     }
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "í˜„ìž¬ì¡°í–¥ê°: %.1fÂ°", (scene->lateral_plan.getSteeringAngleDeg()));
+    snprintf(str, sizeof(str), "ÇöÀçÁ¶Çâ°¢: %.1f¡Æ", (scene->lateral_plan.getSteeringAngleDeg()));
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
     y2 += height2;
 
     if (scene->controls_state.getEnabled()) {
-      snprintf(str, sizeof(str), "í•„ìš”ì¡°í–¥ê°: %.1fÂ°", (scene->controls_state.getSteeringAngleDesiredDeg()));
+      snprintf(str, sizeof(str), "ÇÊ¿äÁ¶Çâ°¢: %.1f¡Æ", (scene->controls_state.getSteeringAngleDesiredDeg()));
     } else {
       snprintf(str, sizeof(str), "N/A");
     }
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "ì—”ì§„RPM: %d", (s->scene.engineRPM));
+    snprintf(str, sizeof(str), "¿£ÁøRPM: %d", (s->scene.engineRPM));
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 

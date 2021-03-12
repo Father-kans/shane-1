@@ -101,11 +101,6 @@ ECU_FINGERPRINT = {
   Ecu.fwdCamera: [384, 715]  # 384 = "ASCMLKASteeringCmd", 715 = "ASCMGasRegenCmd"
 }
 
-
-ECU_FINGERPRINT = {
-  Ecu.fwdCamera: [384, 715]  # 384 = "ASCMLKASteeringCmd", 715 = "ASCMGasRegenCmd"
-}
-
 DBC = {
   CAR.HOLDEN_ASTRA: dbc_dict('gm_global_a_powertrain', 'gm_global_a_object', chassis_dbc='gm_global_a_chassis'),
   CAR.VOLT: dbc_dict('gm_global_a_powertrain', 'gm_global_a_object', chassis_dbc='gm_global_a_chassis'),

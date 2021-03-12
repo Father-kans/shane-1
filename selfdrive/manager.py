@@ -84,7 +84,7 @@ def build():
   nproc = os.cpu_count()
   j_flag = "" if nproc is None else f"-j{nproc - 1}"
 
-  for retry in [False]:
+  for retry in [True, False]:
     scons = subprocess.Popen(["scons", j_flag], cwd=BASEDIR, env=env, stderr=subprocess.PIPE)
 
     compile_output = []
@@ -119,8 +119,8 @@ def build():
             print("....%d" % i)
             time.sleep(1)
           subprocess.check_call(["scons", "-c"], cwd=BASEDIR, env=env)
-          shutil.rmtree("/tmp/scons_cache", ignore_errors=True)
-          shutil.rmtree("/data/scons_cache", ignore_errors=True)
+          # shutil.rmtree("/tmp/scons_cache", ignore_errors=True)
+          # shutil.rmtree("/data/scons_cache", ignore_errors=True)
         else:
           print("scons build failed after retry")
           sys.exit(1)
@@ -434,8 +434,6 @@ def manager_init():
 
 def manager_thread():
 
-  shutdownd = Process(name="shutdownd", target=launcher, args=("selfdrive.shutdownd",))
-  shutdownd.start()
 
   pm_grant("com.neokii.openpilot", "android.permission.ACCESS_FINE_LOCATION")
   system("am startservice com.neokii.oproadlimit/.MainService")
@@ -456,7 +454,7 @@ def manager_thread():
     start_managed_process(p)
 
   # start offroad
-  if EON and "QT" not in os.environ:
+  if EON:
     pm_apply_packages('enable')
     start_offroad()
 
@@ -537,9 +535,9 @@ def manager_prepare():
   total = 100.0 - (0 if PREBUILT else MAX_BUILD_PROGRESS)
 
   for i, p in enumerate(managed_processes):
+    prepare_managed_process(p)
     perc = (100.0 - total) + total * (i + 1) / len(managed_processes)
     spinner.update_progress(perc, 100.)
-    prepare_managed_process(p)
 
 def main():
   params = Params()

@@ -13,6 +13,7 @@
 #include "nanovg_gl_utils.h"
 #include "paint.hpp"
 #include "sidebar.hpp"
+#include "extras.h"
 
 
 // TODO: this is also hardcoded in common/transformations/camera.py
@@ -243,11 +244,33 @@ static void bb_ui_draw_basic_info(UIState *s)
                                                         );
 
     int x = s->viz_rect.x + 210;
-    int y = s->viz_rect.y + 55;
+    int y = s->viz_rect.y + 25;
+    const int height = 55;
+    const NVGcolor textColor = COLOR_WHITE;
+    const NVGcolor textColor2 = COLOR_GREEN_ALPHA(255);
 
     nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
+    ui_draw_text(s, x, y, str, 25 * 2.5, textColor2, "sans-semibold");
+    y += height;
 
-    ui_draw_text(s, x, y, str, 25 * 2.5, COLOR_GREEN_ALPHA(255), "sans-semibold");
+    snprintf(str, sizeof(str), "GPS: %.2fë¯¸í„°", s->scene.gpsAccuracy);
+    ui_draw_text(s, x, y, str, 25 * 2.5, textColor, "sans-regular");
+    y += height;
+
+    snprintf(str, sizeof(str), "ìœ„ì„±: %dê°œ", s->scene.satelliteCount);
+    ui_draw_text(s, x, y, str, 25 * 2.5, textColor, "sans-regular");
+    y += height;
+
+    snprintf(str, sizeof(str), "í•¸ë“¤ê°: %.1fÂ°", (scene->lateral_plan.getSteeringAngleDeg()));
+    ui_draw_text(s, x, y, str, 25 * 2.5, textColor, "sans-regular");
+    y += height;
+
+    if (scene->controls_state.getEnabled()) {
+      snprintf(str, sizeof(str), "ê²½ë¡œê°: %.1fÂ°", (scene->controls_state.getSteeringAngleDesiredDeg()));
+    } else {
+      snprintf(str, sizeof(str), "N/A");
+    }
+    ui_draw_text(s, x, y, str, 25 * 2.5, textColor, "sans-regular");
 }
 
 static void bb_ui_draw_debug(UIState *s)
@@ -255,7 +278,7 @@ static void bb_ui_draw_debug(UIState *s)
     const UIScene *scene = &s->scene;
     char str[1024];
 
-    int y = s->viz_rect.y + 70;
+    int y = s->viz_rect.y + 40;
     const int height = 55;
 
     nvgTextAlign(s->vg, NVG_ALIGN_RIGHT | NVG_ALIGN_BASELINE);
@@ -301,48 +324,28 @@ static void bb_ui_draw_debug(UIState *s)
 
     const int text_x2 = 1870;
 
-    snprintf(str, sizeof(str), "CPU¿Âµµ: %.0f¡ÆC", (round((s->scene.cpuTemp))));
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
-    y2 += height2;
-
-    snprintf(str, sizeof(str), "Batt¿Âµµ: %.0f¡ÆC", scene->deviceState.getBatteryTempC());
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
-    y2 += height2;
-
-    snprintf(str, sizeof(str), "GPS: %.1f¹ÌÅÍ", s->scene.gpsAccuracy);
+    snprintf(str, sizeof(str), "CPUì˜¨ë„: %.0fÂ°C", (round((s->scene.cpuTemp))));
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "À§¼º: %d °³", s->scene.satelliteCount);
+    snprintf(str, sizeof(str), "Battì˜¨ë„: %.0fÂ°C", scene->deviceState.getBatteryTempC());
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
     if (scene->lead_data[0].getStatus()) {
-      snprintf(str, sizeof(str), "¾ÕÂ÷°£°Ý: %d¹ÌÅÍ", (int)scene->lead_data[0].getDRel());
+      snprintf(str, sizeof(str), "ì•žì°¨: %d mì•ž", (int)scene->lead_data[0].getDRel());
     } else {
-      snprintf(str, sizeof(str), "¾ÕÂ÷¹üÀ§¹Û");
-    }
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
-    y2 += height2;
-
-    snprintf(str, sizeof(str), "ÇöÀçÁ¶Çâ°¢: %.1f¡Æ", (scene->lateral_plan.getSteeringAngleDeg()));
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
-    y2 += height2;
-
-    if (scene->controls_state.getEnabled()) {
-      snprintf(str, sizeof(str), "ÇÊ¿äÁ¶Çâ°¢: %.1f¡Æ", (scene->controls_state.getSteeringAngleDesiredDeg()));
-    } else {
-      snprintf(str, sizeof(str), "N/A");
+      snprintf(str, sizeof(str), "ì•žì°¨:--");
     }
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
-    snprintf(str, sizeof(str), "¿£ÁøRPM: %d", (s->scene.engineRPM));
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
+    snprintf(str, sizeof(str), "ì—”ì§„RPM: %d", (s->scene.engineRPM));
+    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
     y2 += height2;
 
     snprintf(str, sizeof(str), "Gas: %.2f, Brake: %.2f", gas, brake);
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
+    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
 }
 
 static void ui_draw_vision_brake(UIState *s) {
@@ -535,8 +538,8 @@ static void ui_draw_df_button(UIState *s) {
   int btn_w = 150;
   int btn_h = 150;
   int y_padding = 50;
-  int btn_x = 1920 - btn_w;
-  int btn_y = 1080 - btn_h - y_padding;
+  int btn_x = 1920 - btn_w*4 +50;
+  int btn_y = 1080 - btn_h;
   int btn_colors[4][3] = {{4, 67, 137}, {36, 168, 188}, {252, 255, 75}, {55, 184, 104}};
 
   nvgBeginPath(s->vg);
@@ -558,7 +561,7 @@ static void ui_draw_ml_button(UIState *s) {
   int btn_w = 475;
   int btn_h = 130;
   int x = 1920 / 2;
-  int y = 940;
+  int y = 955;
   int btn_x = x - btn_w / 2;
   int btn_y = y - btn_h / 2;
 
@@ -595,6 +598,7 @@ static void ui_draw_vision_header(UIState *s) {
   ui_draw_vision_event(s);
   bb_ui_draw_basic_info(s);
   bb_ui_draw_debug(s);
+  ui_draw_extras(s);
 
   ui_draw_df_button(s);
 //  ui_draw_ls_button(s);

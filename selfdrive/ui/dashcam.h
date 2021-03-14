@@ -116,7 +116,7 @@ void start_capture() {
   if (stat(videos_dir, &st) == -1) {
     mkdir(videos_dir,0700);
   }
-  /*if (captureNum == 0 && files_created == 0) {
+  if (captureNum == 0 && files_created == 0) {
     DIR *dir;
     struct dirent *ent;
     if ((dir = opendir ("/storage/emulated/0/videos")) != NULL) {
@@ -126,7 +126,7 @@ void start_capture() {
       captureNum = files_created;
       closedir (dir);
     }
-  }*/
+  }
 
   if (strlen(filenames[captureNum]) && files_created >= RECORD_FILES) {
     if (locked_files[captureNum] > 0) {
@@ -176,7 +176,7 @@ bool screen_lock_button_clicked(int touch_x, int touch_y, dashcam_element el) {
 }
 
 bool screen_button_clicked(int touch_x, int touch_y) {
-  if (touch_x >= 1660 && touch_x <= 1810) {
+  if (touch_x >= 1470 && touch_x <= 1620) {
     if (touch_y >= 885 && touch_y <= 1035) {
       return true;
     }
@@ -194,7 +194,7 @@ void draw_date_time(UIState *s) {
 
   int rect_w = 465;
   int rect_h = 80;
-  int rect_x = (1920-rect_w)/2;
+  int rect_x = (1920-rect_w)/3;
   int rect_y = (1080-rect_h-10);
 
   // Get local time to display
@@ -227,7 +227,7 @@ static void rotate_video() {
 void draw_lock_button(UIState *s) {
   int btn_w = 150;
   int btn_h = 150;
-  int btn_x = 1920 - btn_w - 150;
+  int btn_x = 1920 - btn_w*3 - 50;
   int btn_y = 1080 - btn_h;
   //int imgw, imgh;
   float alpha = 0.3f;
@@ -249,7 +249,7 @@ void draw_lock_button(UIState *s) {
 
 
   lock_button = (dashcam_element){
-    .pos_x = 1500,
+    .pos_x = 1190,
     .pos_y = 920,
     .width = 150,
     .height = 150
@@ -266,7 +266,7 @@ static void screen_draw_button(UIState *s, int touch_x, int touch_y) {
 
     int btn_w = 150;
     int btn_h = 150;
-    int btn_x = 1920 - btn_w - 110;
+    int btn_x = 1920 - btn_w*3 - 10;
     int btn_y = 1080 - btn_h - 45;
     nvgBeginPath(s->vg);
       nvgRoundedRect(s->vg, btn_x, btn_y, btn_w, btn_h, 100);
@@ -324,7 +324,7 @@ void screen_toggle_lock() {
 bool dashcam( UIState *s, int touch_x, int touch_y ) {
 
   bool touched = false;
-  
+
   screen_draw_button(s, touch_x, touch_y);
   if (screen_button_clicked(touch_x,touch_y)) {
     click_elapsed_time = get_time() - click_time;
@@ -348,7 +348,7 @@ bool dashcam( UIState *s, int touch_x, int touch_y ) {
   if (s->scene.car_state.getVEgo() < 1.5 && !s->scene.controls_state.getEnabled()) {
     stop_capture();
   }
-  //s->scene.recording = (captureState != CAPTURE_STATE_NOT_CAPTURING);
-  
+  s->scene.recording = (captureState != CAPTURE_STATE_NOT_CAPTURING);
+
   return touched;
 }

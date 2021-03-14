@@ -19,7 +19,7 @@
 
 
 std::map<std::string, int> LS_TO_IDX = {{"off", 0}, {"audible", 1}, {"silent", 2}};
-std::map<std::string, int> DF_TO_IDX = {{"traffic", 0}, {"relaxed", 1}, {"stock", 2}, {"auto", 3}};
+std::map<std::string, int> DF_TO_IDX = {{"traffic", 0}, {"relaxed", 1}, {"roadtrip", 2}, {"auto", 3}};
 
 
 int write_param_float(float param, const char* param_name, bool persistent_param) {
@@ -73,6 +73,8 @@ static void ui_init_vision(UIState *s) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_B, GL_RED);
   }
   assert(glGetError() == GL_NO_ERROR);
+
+  s->scene.recording = false;
 }
 
 

@@ -515,7 +515,7 @@ static void ui_draw_ls_button(UIState *s) {
   int x_padding = 200;
   int y_padding = 50;
   int btn_x = 1920 - btn_w - x_padding;
-  int btn_y = 1080 - btn_h - y_padding;
+  int btn_y = 1080 - btn_h;
   int btn_colors[3][3] = {{255, 55, 55}, {55, 184, 104}, {4, 67, 137}};
 
   nvgBeginPath(s->vg);
@@ -538,7 +538,7 @@ static void ui_draw_df_button(UIState *s) {
   int btn_w = 150;
   int btn_h = 150;
   int y_padding = 50;
-  int btn_x = 1920 - btn_w*4 +50;
+  int btn_x = 1920 - btn_w;
   int btn_y = 1080 - btn_h;
   int btn_colors[4][3] = {{4, 67, 137}, {36, 168, 188}, {252, 255, 75}, {55, 184, 104}};
 

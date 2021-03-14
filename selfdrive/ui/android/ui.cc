@@ -50,9 +50,9 @@ static void send_ml(UIState *s, bool enabled) {
 static bool handle_ls_touch(UIState *s, int touch_x, int touch_y) {
   //lsButton manager
   int padding = 40;
-  int btn_x_1 = 1260 - 200;
-  int btn_x_2 = 1260 - 50;
-  if ((btn_x_1 - padding <= touch_x) && (touch_x <= btn_x_2 + padding) && (855 - padding <= touch_y)) {
+  int btn_x_1 = 1660 - 200;
+  int btn_x_2 = 1660 - 50;
+  if ((btn_x_1 - padding <= touch_x) && (touch_x <= btn_x_2 + padding) && (905 - padding <= touch_y)) {
     s->scene.lsButtonStatus++;
     if (s->scene.lsButtonStatus > 2) { s->scene.lsButtonStatus = 0; }
     send_ls(s, s->scene.lsButtonStatus);
@@ -65,7 +65,7 @@ static bool handle_ls_touch(UIState *s, int touch_x, int touch_y) {
 static bool handle_df_touch(UIState *s, int touch_x, int touch_y) {
   //dfButton manager
   int padding = 40;
-  if ((1260 - padding <= touch_x) && (935 - padding <= touch_y)) {
+  if ((1660 - padding <= touch_x) && (905 - padding <= touch_y)) {
     s->scene.dfButtonStatus++;
     if (s->scene.dfButtonStatus > 3) { s->scene.dfButtonStatus = 0; }
     send_df(s, s->scene.dfButtonStatus);
@@ -238,13 +238,6 @@ int main(int argc, char* argv[]) {
     // poll for touch events
     int touch_x = -1, touch_y = -1;
     int touched = touch_poll(&touch, &touch_x, &touch_y, 0);
-    if (touched == 1) {
-      if (s->ui_debug) { printf("touched x: %d, y: %d\n", touch_x, touch_y); }
-      handle_sidebar_touch(s, touch_x, touch_y);
-      if (!handle_SA_touched(s, touch_x, touch_y)) {  // if SA button not touched
-        handle_vision_touch(s, touch_x, touch_y);
-      }
-    }
 
     if(s->awake)
     {
@@ -253,8 +246,11 @@ int main(int argc, char* argv[]) {
     }
 
     if (touched == 1) {
+      if (s->ui_debug) { printf("touched x: %d, y: %d\n", touch_x, touch_y); }
       handle_sidebar_touch(s, touch_x, touch_y);
-      handle_vision_touch(s, touch_x, touch_y);
+      if (!handle_SA_touched(s, touch_x, touch_y)) {  // if SA button not touched
+        handle_vision_touch(s, touch_x, touch_y);
+      }
     }
 
     // Don't waste resources on drawing in case screen is off

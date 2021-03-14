@@ -1,3 +1,4 @@
+
 #include "ui.hpp"
 
 #include <assert.h>
@@ -244,14 +245,14 @@ static void bb_ui_draw_basic_info(UIState *s)
                                                         );
 
     int x = s->viz_rect.x + 210;
-    int y = s->viz_rect.y + 25;
+    int y = s->viz_rect.y + 35;
     const int height = 55;
     const NVGcolor textColor = COLOR_WHITE;
     const NVGcolor textColor2 = COLOR_GREEN_ALPHA(255);
 
     nvgTextAlign(s->vg, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
     ui_draw_text(s, x, y, str, 25 * 2.5, textColor2, "sans-semibold");
-    y += height;
+    y += height+15;
 
     snprintf(str, sizeof(str), "GPS: %.2f미터", s->scene.gpsAccuracy);
     ui_draw_text(s, x, y, str, 25 * 2.5, textColor, "sans-regular");
@@ -260,9 +261,10 @@ static void bb_ui_draw_basic_info(UIState *s)
     snprintf(str, sizeof(str), "위성: %d개", s->scene.satelliteCount);
     ui_draw_text(s, x, y, str, 25 * 2.5, textColor, "sans-regular");
     y += height;
+    y += height;
 
     snprintf(str, sizeof(str), "핸들각: %.1f°", (scene->lateral_plan.getSteeringAngleDeg()));
-    ui_draw_text(s, x, y, str, 25 * 2.5, textColor, "sans-regular");
+    ui_draw_text(s, x-200, y, str, 25 * 2.5, textColor, "sans-regular");
     y += height;
 
     if (scene->controls_state.getEnabled()) {
@@ -270,7 +272,15 @@ static void bb_ui_draw_basic_info(UIState *s)
     } else {
       snprintf(str, sizeof(str), "N/A");
     }
-    ui_draw_text(s, x, y, str, 25 * 2.5, textColor, "sans-regular");
+    ui_draw_text(s, x-200, y, str, 25 * 2.5, textColor, "sans-regular");
+    y += height;
+
+    if (scene->lead_data[0].getStatus()) {
+      snprintf(str, sizeof(str), "앞차: %d m앞", (int)scene->lead_data[0].getDRel());
+    } else {
+      snprintf(str, sizeof(str), "앞차:--");
+    }
+    ui_draw_text(s, x-200, y, str, 25 * 2.5, textColor, "sans-regular");
 }
 
 static void bb_ui_draw_debug(UIState *s)
@@ -278,7 +288,7 @@ static void bb_ui_draw_debug(UIState *s)
     const UIScene *scene = &s->scene;
     char str[1024];
 
-    int y = s->viz_rect.y + 40;
+    int y = s->viz_rect.y + 50;
     const int height = 55;
 
     nvgTextAlign(s->vg, NVG_ALIGN_RIGHT | NVG_ALIGN_BASELINE);
@@ -324,6 +334,10 @@ static void bb_ui_draw_debug(UIState *s)
 
     const int text_x2 = 1870;
 
+    snprintf(str, sizeof(str), "Gas: %.2f, Brake: %.2f", gas, brake);
+    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
+    y2 += height2;
+
     snprintf(str, sizeof(str), "CPU온도: %.0f°C", (round((s->scene.cpuTemp))));
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
@@ -332,19 +346,7 @@ static void bb_ui_draw_debug(UIState *s)
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
     y2 += height2;
 
-    if (scene->lead_data[0].getStatus()) {
-      snprintf(str, sizeof(str), "앞차: %d m앞", (int)scene->lead_data[0].getDRel());
-    } else {
-      snprintf(str, sizeof(str), "앞차:--");
-    }
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
-    y2 += height2;
-
     snprintf(str, sizeof(str), "엔진RPM: %d", (s->scene.engineRPM));
-    ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor2, "sans-regular");
-    y2 += height2;
-
-    snprintf(str, sizeof(str), "Gas: %.2f, Brake: %.2f", gas, brake);
     ui_draw_text(s, text_x2, y2, str, 25 * 2.5, textColor, "sans-regular");
 }
 

@@ -112,6 +112,7 @@ typedef struct UIScene {
 
   float angleSteers;
   int engineRPM;
+  bool recording;
 
   int lead_status;
   float lead_d_rel, lead_v_rel;

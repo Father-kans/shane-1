@@ -435,8 +435,8 @@ def manager_init():
 
 def manager_thread():
 
-  #shutdownd = Process(name="shutdownd", target=launcher, args=("selfdrive.shutdownd",))
-  #shutdownd.start()
+  shutdownd = Process(name="shutdownd", target=launcher, args=("selfdrive.shutdownd",))
+  shutdownd.start()
 
   pm_grant("com.neokii.openpilot", "android.permission.ACCESS_FINE_LOCATION")
   system("am startservice com.neokii.oproadlimit/.MainService")

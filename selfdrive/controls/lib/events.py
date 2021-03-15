@@ -813,5 +813,16 @@ EVENTS: Dict[int, Dict[str, Union[Alert, Callable[[Any, messaging.SubMaster, boo
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0., .2),
     ET.NO_ENTRY: NoEntryAlert("Cruise Fault: Restart the Car"),
   },
+  EventName.autoHoldActivated: {
+    ET.PERMANENT: Alert(
+      "AutoHold Activated",
+      "You can rest your foot now.",
+      AlertStatus.normal, AlertSize.mid,
+      Priority.LOWER, VisualAlert.none, AudibleAlert.none, 0., 0.4, .3),
+  },
+  EventName.slowingDownSpeed: {
+    ET.PERMANENT: Alert("Slowing down","", AlertStatus.normal, AlertSize.small,
+      Priority.MID, VisualAlert.none, AudibleAlert.none, 0., .1, .1),
+  },
 
 }

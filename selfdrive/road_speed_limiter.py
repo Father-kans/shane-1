@@ -4,6 +4,9 @@ import threading
 import time
 import socket
 from threading import Thread
+from common.params import Params
+
+from common.numpy_fast import interp
 
 current_milli_time = lambda: int(round(time.time() * 1000))
 
@@ -14,6 +17,10 @@ class RoadSpeedLimiter:
     self.slowing_down = False
     self.last_exception = None
     self.lock = threading.Lock()
+
+    self.start_dist = 0
+
+    self.longcontrol = Params().get('LongControlEnabled') == b'1'
 
     thread = Thread(target=self.udp_recv, args=[])
     thread.setDaemon(True)
@@ -47,17 +54,18 @@ class RoadSpeedLimiter:
             finally:
               self.lock.release()
 
+
       except Exception as e:
         self.last_exception = e
 
-  def get_val(self, key):
+  def get_val(self, key, default=None):
 
     if self.json is None:
-      return None
+      return default
 
     if key in self.json:
       return self.json[key]
-    return None
+    return default
 
   def get_max_speed(self, CS, v_cruise_kph):
 
@@ -69,12 +77,14 @@ class RoadSpeedLimiter:
         log = "expired: {:d}, {:d}".format(current_milli_time(), self.last_updated)
 
       self.slowing_down = False
-      return 0, 0, 0, log
+      return 0, 0, 0, False, log
 
     try:
 
       road_limit_speed = self.get_val('road_limit_speed')
       is_highway = self.get_val('is_highway')
+
+      cam_type = int(self.get_val('cam_type', 0))
 
       cam_limit_speed_left_dist = self.get_val('cam_limit_speed_left_dist')
       cam_limit_speed = self.get_val('cam_limit_speed')
@@ -101,29 +111,67 @@ class RoadSpeedLimiter:
       log += ", " + str(section_limit_speed)
       log += ", " + str(section_left_dist)
 
-      if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:
-        if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and (self.slowing_down or cam_limit_speed_left_dist < CS.vEgo * 10):
+      v_ego = CS.clu11["CF_Clu_Vanz"] / 3.6
 
-          self.slowing_down = True
-          return cam_limit_speed, cam_limit_speed, cam_limit_speed_left_dist, log
+      if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:
+
+        diff_speed = v_ego*3.6 - cam_limit_speed
+
+        if cam_type == 7:
+          if self.longcontrol:
+            sec = interp(diff_speed, [10., 30.], [15., 22.])
+          else:
+            sec = interp(diff_speed, [10., 30.], [16., 23.])
+        else:
+          if self.longcontrol:
+            sec = interp(diff_speed, [10., 30.], [12., 18.])
+          else:
+            sec = interp(diff_speed, [10., 30.], [13., 20.])
+
+        if MIN_LIMIT <= cam_limit_speed <= MAX_LIMIT and (self.slowing_down or cam_limit_speed_left_dist < v_ego * sec):
+
+          if not self.slowing_down:
+            self.start_dist = cam_limit_speed_left_dist * 1.2
+            self.slowing_down = True
+            first_started = True
+          else:
+            first_started = False
+
+          base = self.start_dist / 1.2 * 0.65
+
+          td = self.start_dist - base
+          d = cam_limit_speed_left_dist - base
+
+          if d > 0 and td > 0. and diff_speed > 0:
+            pp = d / td
+          else:
+            pp = 0
+
+          return cam_limit_speed + int(pp * diff_speed), cam_limit_speed, cam_limit_speed_left_dist, first_started, log
 
         self.slowing_down = False
-        return 0, cam_limit_speed, cam_limit_speed_left_dist, log
+        return 0, cam_limit_speed, cam_limit_speed_left_dist, False, log
 
       elif section_left_dist is not None and section_limit_speed is not None and section_left_dist > 0:
         if MIN_LIMIT <= section_limit_speed <= MAX_LIMIT:
-          self.slowing_down = True
-          return section_limit_speed, section_limit_speed, section_left_dist, log
+
+          if not self.slowing_down:
+            self.slowing_down = True
+            first_started = True
+          else:
+            first_started = False
+
+          return section_limit_speed, section_limit_speed, section_left_dist, first_started, log
 
         self.slowing_down = False
-        return 0, section_limit_speed, section_left_dist, log
+        return 0, section_limit_speed, section_left_dist, False, log
 
     except Exception as e:
       log = "Ex: " + str(e)
       pass
 
     self.slowing_down = False
-    return 0, 0, 0, log
+    return 0, 0, 0, False, log
 
 
 road_speed_limiter = None

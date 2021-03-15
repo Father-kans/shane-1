@@ -6,10 +6,11 @@ if [ ! -f "/system/fonts/opensans_regular.ttf" ]; then
 
     mount -o rw,remount /system
 
-  	cp -f /data/openpilot/installer/fonts/NanumGothic* /system/fonts/
+    cp -f /data/openpilot/installer/bootanimation.zip /system/media/
+    cp -f /data/openpilot/installer/fonts/NanumGothic* /system/fonts/
     cp -f /data/openpilot/installer/fonts/fonts.xml /system/etc/fonts.xml
     chmod 644 /system/etc/fonts.xml
-  	chmod 644 /system/fonts/NanumGothic*
+    chmod 644 /system/fonts/NanumGothic*
 
     mount -o ro,remount /system
 fi

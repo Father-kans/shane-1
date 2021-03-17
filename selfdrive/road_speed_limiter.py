@@ -96,9 +96,9 @@ class RoadSpeedLimiter:
         MAX_LIMIT = 120
 
       log = "RECV: " + str(is_highway)
-      log += ", " + str(cam_limit_speed)
+      log += ", " + str(cam_limit_speed) + 5
       log += ", " + str(cam_limit_speed_left_dist)
-      log += ", " + str(section_limit_speed)
+      log += ", " + str(section_limit_speed) + 5
       log += ", " + str(section_left_dist)
 
       if cam_limit_speed_left_dist is not None and cam_limit_speed is not None and cam_limit_speed_left_dist > 0:

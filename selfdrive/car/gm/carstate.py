@@ -13,8 +13,9 @@ class CarState(CarStateBase):
     super().__init__(CP)
     can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
     self.shifter_values = can_define.dv["ECMPRDNL"]["PRNDL"]
+    self.engineRPM = 0
 
-  def update(self, pt_cp):
+  def update(self, pt_cp, ch_cp):
     ret = car.CarState.new_message()
 
     self.prev_cruise_buttons = self.cruise_buttons
@@ -46,6 +47,7 @@ class CarState(CarStateBase):
     # 0 inactive, 1 active, 2 temporarily limited, 3 failed
     self.lkas_status = pt_cp.vl["PSCMStatus"]['LKATorqueDeliveredStatus']
     ret.steerWarning = self.lkas_status not in [0, 1]
+    self.engineRPM = pt_cp.vl["ECMEngineStatus"]['EngineRPM']
 
     # 1 - open, 0 - closed
     ret.doorOpen = (pt_cp.vl["BCMDoorBeltStatus"]['FrontLeftDoor'] == 1 or
@@ -70,6 +72,8 @@ class CarState(CarStateBase):
 
     ret.cruiseState.enabled = self.pcm_acc_status != AccState.OFF
     ret.cruiseState.standstill = self.pcm_acc_status == AccState.STANDSTILL
+
+    ret.brakeLights = ch_cp.vl["EBCMFrictionBrakeStatus"]["FrictionBrakePressure"] != 0 or ret.brakePressed
 
     return ret
 
@@ -99,6 +103,7 @@ class CarState(CarStateBase):
       ("LKADriverAppldTrq", "PSCMStatus", 0),
       ("LKATorqueDelivered", "PSCMStatus", 0),
       ("LKATorqueDeliveredStatus", "PSCMStatus", 0),
+      ("EngineRPM", "ECMEngineStatus", 0),
       ("TractionControlOn", "ESPStatus", 0),
       ("EPBClosed", "EPBStatus", 0),
       ("CruiseMainOn", "ECMEngineStatus", 0),
@@ -110,3 +115,13 @@ class CarState(CarStateBase):
       ]
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, [], CanBus.POWERTRAIN)
+
+  @staticmethod
+  def get_chassis_can_parser(CP):
+    # this function generates lists for signal, messages and initial values
+    signals = [
+      # sig_name, sig_address, default
+      ("FrictionBrakePressure", "EBCMFrictionBrakeStatus", 0),
+    ]
+
+    return CANParser(DBC[CP.carFingerprint]['chassis'], signals, [], CanBus.CHASSIS)

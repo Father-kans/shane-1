@@ -15,7 +15,7 @@ class CarState(CarStateBase):
     self.shifter_values = can_define.dv["ECMPRDNL"]["PRNDL"]
     self.engineRPM = 0
 
-  def update(self, pt_cp):
+  def update(self, pt_cp, ch_cp):
     ret = car.CarState.new_message()
 
     self.prev_cruise_buttons = self.cruise_buttons
@@ -73,6 +73,8 @@ class CarState(CarStateBase):
     ret.cruiseState.enabled = self.pcm_acc_status != AccState.OFF
     ret.cruiseState.standstill = self.pcm_acc_status == AccState.STANDSTILL
 
+    ret.brakeLights = ch_cp.vl["EBCMFrictionBrakeStatus"]["FrictionBrakePressure"] != 0 or ret.brakePressed
+
     return ret
 
   @staticmethod
@@ -113,3 +115,13 @@ class CarState(CarStateBase):
       ]
 
     return CANParser(DBC[CP.carFingerprint]['pt'], signals, [], CanBus.POWERTRAIN)
+
+  @staticmethod
+  def get_chassis_can_parser(CP):
+    # this function generates lists for signal, messages and initial values
+    signals = [
+      # sig_name, sig_address, default
+      ("FrictionBrakePressure", "EBCMFrictionBrakeStatus", 0),
+    ]
+
+    return CANParser(DBC[CP.carFingerprint]['chassis'], signals, [], CanBus.CHASSIS)

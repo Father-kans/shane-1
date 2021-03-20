@@ -117,8 +117,8 @@ class CarInterface(CarInterfaceBase):
   # returns a car.CarState
   def update(self, c, can_strings):
     self.cp.update_strings(can_strings)
-
-    ret = self.CS.update(self.cp)
+    self.cp_chassis.update_strings(can_strings)
+    ret = self.CS.update(self.cp, self.cp_chassis)
 
     ret.canValid = self.cp.can_valid
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False

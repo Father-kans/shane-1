@@ -284,6 +284,8 @@ struct DeviceState @0xa4d8b5af2aa492eb {
   networkStrength @24 :NetworkStrength;
   carBatteryCapacityUwh @25 :UInt32;
 
+  wifiIpAddress @31 :Text;
+
   fanSpeedPercentDesired @10 :UInt16;
   started @11 :Bool;
   startedMonoTime @13 :UInt64;
@@ -484,6 +486,7 @@ struct LiveTracks {
 }
 
 struct ControlsState @0x97ff69c53601abf1 {
+  vEgo @0 :Float32;
   startMonoTime @48 :UInt64;
   canMonoTimes @21 :List(UInt64);
   longitudinalPlanMonoTime @28 :UInt64;
@@ -504,6 +507,8 @@ struct ControlsState @0x97ff69c53601abf1 {
   steeringAngleDesiredDeg @29 :Float32;
   curvature @37 :Float32;  # path curvature from vehicle model
   forceDecel @51 :Bool;
+  steerOverride @20 :Bool;
+  angleSteers @13 :Float32;
 
   # UI alerts
   alertText1 @24 :Text;
@@ -517,6 +522,12 @@ struct ControlsState @0x97ff69c53601abf1 {
 
   cumLagMs @15 :Float32;
   canErrorCounter @57 :UInt32;
+
+  decelForModel @59 :Bool;
+
+  #Road Speed Limiter
+  roadLimitSpeed @60 :Int32;
+  roadLimitSpeedLeftDist @61 :Int32;
 
   lateralControlState :union {
     indiState @52 :LateralINDIState;
@@ -595,7 +606,6 @@ struct ControlsState @0x97ff69c53601abf1 {
   }
 
   # deprecated
-  vEgoDEPRECATED @0 :Float32;
   vEgoRawDEPRECATED @32 :Float32;
   aEgoDEPRECATED @1 :Float32;
   canMonoTimeDEPRECATED @16 :UInt64;
@@ -617,11 +627,9 @@ struct ControlsState @0x97ff69c53601abf1 {
   decelForTurnDEPRECATED @47 :Bool;
   decelForModelDEPRECATED @54 :Bool;
   awarenessStatusDEPRECATED @26 :Float32;
-  angleSteersDEPRECATED @13 :Float32;
   vCurvatureDEPRECATED @46 :Float32;
   mapValidDEPRECATED @49 :Bool;
   jerkFactorDEPRECATED @12 :Float32;
-  steerOverrideDEPRECATED @20 :Bool;
 }
 
 struct ModelDataV2 {
@@ -744,6 +752,8 @@ struct LongitudinalPlan @0xe00b5b3eba12876c {
     mpc2 @2;
     mpc3 @3;
     model @4;
+    dynamicSpeed @5;
+    curveSlowdown @6;
   }
 
   # deprecated
@@ -789,6 +799,11 @@ struct LateralPlan @0xe1e9318e2ae8b51e {
   curvatureRate @23 :Float32;
   rawCurvature @24 :Float32;
   rawCurvatureRate @25 :Float32;
+
+  #Neokii's Ui
+  steerRatio @26 :Float32;
+  steerRateCost @27 :Float32;
+  steerActuatorDelay @28 :Float32;
 
   enum Desire {
     none @0;
@@ -1275,6 +1290,46 @@ struct ManagerState {
   }
 }
 
+
+struct DynamicFollowData {
+  mpcTR @0 :Float32;
+  profilePred @1 :UInt16;
+}
+
+struct DynamicFollowButton {
+  status @0 :UInt16;
+}
+
+struct LaneSpeed {
+  fastestLane @0 :Text;
+  state @1 :Text;
+  new @2 :Bool;
+
+  leftLaneSpeeds @3 :List(Float32);
+  middleLaneSpeeds @4 :List(Float32);
+  rightLaneSpeeds @5 :List(Float32);
+
+  leftLaneDistances @6 :List(Float32);
+  middleLaneDistances @7 :List(Float32);
+  rightLaneDistances @8 :List(Float32);
+
+  leftLaneOncoming @9 :Bool;
+  rightLaneOncoming @10 :Bool;
+}
+
+struct LaneSpeedButton {
+  status @0 :UInt16;
+}
+
+struct DynamicCameraOffset {
+  keepingLeft @0 :Bool;
+  keepingRight @1 :Bool;
+}
+
+struct ModelLongButton {
+  enabled @0 :Bool;
+}
+
 struct Event {
   logMonoTime @0 :UInt64;  # nanoseconds
   valid @67 :Bool = true;
@@ -1297,6 +1352,7 @@ struct Event {
     liveTracks @16 :List(LiveTracks);
     sendcan @17 :List(CanData);
     liveCalibration @19 :LiveCalibrationData;
+    gpsLocation @21 :GpsLocationData;
     carState @22 :Car.CarState;
     carControl @23 :Car.CarControl;
     longitudinalPlan @24 :LongitudinalPlan;
@@ -1370,6 +1426,13 @@ struct Event {
     orbFeaturesSummaryDEPRECATED @58 :Legacy.OrbFeaturesSummary;
     featuresDEPRECATED @10 :Legacy.CalibrationFeatures;
     kalmanOdometryDEPRECATED @65 :Legacy.KalmanOdometry;
-    gpsLocationDEPRECATED @21 :GpsLocationData;
+
+
+    dynamicFollowData @79 :DynamicFollowData;
+    dynamicFollowButton @80 :DynamicFollowButton;
+    laneSpeed @81 :LaneSpeed;
+    laneSpeedButton @82 :LaneSpeedButton;
+    dynamicCameraOffset @83 :DynamicCameraOffset;
+    modelLongButton @84 :ModelLongButton;
   }
 }

@@ -21,6 +21,7 @@
 
 #include "common/mat.h"
 #include "common/visionimg.h"
+#include "common/framebuffer.h"
 #include "common/modeldata.h"
 #include "common/params.h"
 #include "common/glutil.h"
@@ -35,6 +36,9 @@
 #define COLOR_WHITE_ALPHA(x) nvgRGBA(255, 255, 255, x)
 #define COLOR_YELLOW nvgRGBA(218, 202, 37, 255)
 #define COLOR_RED nvgRGBA(201, 34, 49, 255)
+#define COLOR_OCHRE nvgRGBA(218, 111, 37, 255)
+#define COLOR_GREEN_ALPHA(x) nvgRGBA(0, 255, 0, x)
+#define COLOR_BLUE_ALPHA(x) nvgRGBA(0, 0, 255, x)
 
 #define UI_BUF_COUNT 4
 
@@ -51,6 +55,7 @@ typedef struct Rect {
 
 const int sbr_w = 300;
 const int bdr_s = 30;
+const int bdr_is = 30;
 const int header_h = 420;
 const int footer_h = 280;
 const Rect settings_btn = {50, 35, 200, 117};
@@ -95,11 +100,27 @@ typedef struct {
 
 typedef struct UIScene {
 
+  int dfButtonStatus;
+  int lsButtonStatus;
+  bool mlButtonEnabled;
+
   mat3 view_from_calib;
   bool world_objects_visible;
 
   bool is_rhd;
   bool driver_view;
+  bool brakeLights;
+
+  float angleSteers;
+  int engineRPM;
+  bool recording;
+
+  int lead_status;
+  float lead_d_rel, lead_v_rel;
+
+  float cpuTemp;
+  int cpuPerc;
+  int cpuUsagePercent;
 
   std::string alert_text1;
   std::string alert_text2;
@@ -116,8 +137,10 @@ typedef struct UIScene {
   cereal::ControlsState::Reader controls_state;
   cereal::DriverState::Reader driver_state;
   cereal::DriverMonitoringState::Reader dmonitoring_state;
+  cereal::ModelDataV2::Reader model;
 
   // gps
+  float gpsAccuracy;
   int satelliteCount;
   bool gpsOK;
 
@@ -127,6 +150,13 @@ typedef struct UIScene {
   line_vertices_data track_vertices;
   line_vertices_data lane_line_vertices[4];
   line_vertices_data road_edge_vertices[2];
+
+  // neokii dev UI
+  cereal::CarControl::Reader car_control;
+  cereal::LateralPlan::Reader lateral_plan;
+  cereal::CarParams::Reader car_params;
+  cereal::GpsLocationData::Reader gps_ext; 
+  cereal::LiveParametersData::Reader live_params;
 
   // lead
   vertex_data lead_vertices[2];
@@ -143,15 +173,18 @@ typedef struct UIState {
   VisionBuf * last_frame;
 
   // framebuffer
+  std::unique_ptr<FrameBuffer> fb;
   int fb_w, fb_h;
 
   // NVG
   NVGcontext *vg;
+  int font_sans_bold;
 
   // images
   std::map<std::string, int> images;
 
   SubMaster *sm;
+  PubMaster *pm;
 
   Sound *sound;
   UIStatus status;
@@ -167,6 +200,14 @@ typedef struct UIState {
 
   // device state
   bool awake;
+  float light_sensor, accel_sensor, gyro_sensor;
+
+  bool started;
+  bool ignition;
+  bool is_metric;
+  bool longitudinal_control;
+  bool ui_debug;
+  uint64_t started_frame;
 
   bool sidebar_collapsed;
   Rect video_rect, viz_rect;
@@ -174,6 +215,7 @@ typedef struct UIState {
 } UIState;
 
 void ui_init(UIState *s);
+void sa_init(UIState *s, bool full_init);
 void ui_update(UIState *s);
 
 int write_param_float(float param, const char* param_name, bool persistent_param = false);

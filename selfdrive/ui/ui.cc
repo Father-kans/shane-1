@@ -1,6 +1,8 @@
 #include <iostream>
 #include <stdio.h>
 #include <cmath>
+#include <stdlib.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <assert.h>
 
@@ -57,6 +59,7 @@ void ui_init(UIState *s) {
   s->sm = new SubMaster({
     "modelV2", "controlsState", "uiLayoutState", "liveCalibration", "radarState", "deviceState", "liveLocationKalman",
     "pandaState", "carParams", "driverState", "driverMonitoringState", "sensorEvents", "carState", "ubloxGnss",
+    "carControl", "lateralPlan", "gpsLocationExternal", "liveParameters",
 #ifdef QCOM2
     "roadCameraState",
 #endif
@@ -150,6 +153,8 @@ static void update_sockets(UIState *s) {
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();
+    s->scene.brakeLights = scene.car_state.getBrakeLights();
+    s->scene.engineRPM = scene.car_state.getEngineRPM();
   }
   if (sm.updated("radarState")) {
     std::optional<cereal::ModelDataV2::XYZTData::Reader> line;
@@ -185,6 +190,20 @@ static void update_sockets(UIState *s) {
   }
   if (sm.updated("deviceState")) {
     scene.deviceState = sm["deviceState"].getDeviceState();
+    s->scene.cpuTemp = scene.deviceState.getCpuTempC()[0];
+    s->scene.cpuPerc = scene.deviceState.getCpuUsagePercent();
+  }
+  if (sm.updated("lateralPlan")) {
+    scene.lateral_plan = sm["lateralPlan"].getLateralPlan();
+  }
+  if (sm.updated("gpsLocationExternal")) {
+    auto data = sm["gpsLocationExternal"].getGpsLocationExternal();
+    s->scene.gpsAccuracy = data.getAccuracy();
+
+    if (s->scene.gpsAccuracy > 100)
+      s->scene.gpsAccuracy = 99.99;
+    else if (s->scene.gpsAccuracy == 0)
+      s->scene.gpsAccuracy = 99.8;
   }
   if (sm.updated("pandaState")) {
     auto pandaState = sm["pandaState"].getPandaState();

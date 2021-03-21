@@ -189,9 +189,9 @@ static void bb_ui_draw_basic_info(UIState *s)
     const UIScene *scene = &s->scene;
     char str[1024];
 
-    snprintf(str, sizeof(str), "SR(%.2f) SRC(%.2f) SAD(%.2f) AO(%.2f/%.2f)", scene->lateral_plan.getSteerRatio(),
-                                                        scene->lateral_plan.getSteerRateCost(),
-                                                        scene->lateral_plan.getSteerActuatorDelay(),
+    snprintf(str, sizeof(str), "SR(%.2f) SRC(%.2f) SAD(%.2f) AO(%.2f/%.2f)", scene->controls_state.getSteerRatio(),
+                                                        scene->controls_state.getSteerRateCost(),
+                                                        scene->controls_state.getSteerActuatorDelay(),
                                                         scene->live_params.getAngleOffsetDeg(),
                                                         scene->live_params.getAngleOffsetAverageDeg()
                                                         );

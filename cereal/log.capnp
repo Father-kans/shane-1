@@ -529,6 +529,10 @@ struct ControlsState @0x97ff69c53601abf1 {
   roadLimitSpeed @60 :Int32;
   roadLimitSpeedLeftDist @61 :Int32;
 
+  steerRatio @62 :Float32;
+  steerRateCost @63 :Float32;
+  steerActuatorDelay @64 :Float32;
+
   lateralControlState :union {
     indiState @52 :LateralINDIState;
     pidState @53 :LateralPIDState;

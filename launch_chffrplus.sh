@@ -11,8 +11,6 @@ chmod 644 /system/fonts/NanumGothic*
 mount -o ro,remount /system
 fi
 
-cp -f /data/openpilot/installer/bootanimation.zip /system/media/
-
 if [ "$(getprop persist.sys.locale)" != "ko-KR" ]; then
     setprop persist.sys.locale ko-KR
     setprop persist.sys.language ko
@@ -21,6 +19,13 @@ if [ "$(getprop persist.sys.locale)" != "ko-KR" ]; then
 
     sleep 2
     reboot
+fi
+
+if [ ! -f "/system/media/boot.zip" ]; then
+echo "installing bootanimation..."
+mount -o rw,remount /system
+cp -f /data/openpilot/installer/bootanimation.zip /system/media/
+mount -o ro,remount /system
 fi
 
 if [ -z "$BASEDIR" ]; then

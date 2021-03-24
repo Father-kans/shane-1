@@ -13,6 +13,12 @@ class CarState(CarStateBase):
     super().__init__(CP)
     can_define = CANDefine(DBC[CP.carFingerprint]['pt'])
     self.shifter_values = can_define.dv["ECMPRDNL"]["PRNDL"]
+    self.prev_distance_button = 0
+    self.prev_lka_button = 0
+    self.lka_button = 0
+    self.distance_button = 0
+    self.follow_level = 2
+    self.lkMode = True
     self.engineRPM = 0
 
   def update(self, pt_cp, ch_cp):
@@ -20,6 +26,10 @@ class CarState(CarStateBase):
 
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = pt_cp.vl["ASCMSteeringButton"]['ACCButtons']
+    self.prev_lka_button = self.lka_button
+    self.lka_button = pt_cp.vl["ASCMSteeringButton"]["LKAButton"]
+    self.prev_distance_button = self.distance_button
+    self.distance_button = pt_cp.vl["ASCMSteeringButton"]["DistanceButton"]
 
     ret.wheelSpeeds.fl = pt_cp.vl["EBCMWheelSpdFront"]['FLWheelSpd'] * CV.KPH_TO_MS
     ret.wheelSpeeds.fr = pt_cp.vl["EBCMWheelSpdFront"]['FRWheelSpd'] * CV.KPH_TO_MS
@@ -77,6 +87,10 @@ class CarState(CarStateBase):
 
     return ret
 
+  def get_follow_level(self):
+    return self.follow_level
+
+
   @staticmethod
   def get_can_parser(CP):
     # this function generates lists for signal, messages and initial values
@@ -107,6 +121,8 @@ class CarState(CarStateBase):
       ("TractionControlOn", "ESPStatus", 0),
       ("EPBClosed", "EPBStatus", 0),
       ("CruiseMainOn", "ECMEngineStatus", 0),
+      ("LKAButton", "ASCMSteeringButton", 0),
+      ("DistanceButton", "ASCMSteeringButton", 0),
     ]
 
     if CP.carFingerprint == CAR.VOLT:

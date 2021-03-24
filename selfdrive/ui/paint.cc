@@ -189,9 +189,9 @@ static void bb_ui_draw_basic_info(UIState *s)
     const UIScene *scene = &s->scene;
     char str[1024];
 
-    snprintf(str, sizeof(str), "SR(%.2f) SRC(%.2f) SAD(%.2f) AO(%.2f/%.2f)", scene->lateral_plan.getSteerRatio(),
-                                                        scene->lateral_plan.getSteerRateCost(),
-                                                        scene->lateral_plan.getSteerActuatorDelay(),
+    snprintf(str, sizeof(str), "SR(%.2f) SRC(%.2f) SAD(%.2f) AO(%.2f/%.2f)", scene->controls_state.getSteerRatio(),
+                                                        scene->controls_state.getSteerRateCost(),
+                                                        scene->controls_state.getSteerActuatorDelay(),
                                                         scene->live_params.getAngleOffsetDeg(),
                                                         scene->live_params.getAngleOffsetAverageDeg()
                                                         );
@@ -356,7 +356,7 @@ static void ui_draw_vision_speed(UIState *s) {
   nvgTextAlign(s->vg, NVG_ALIGN_CENTER | NVG_ALIGN_BASELINE);
   NVGcolor color = s->scene.car_state.getBrakeLights() ? nvgRGBA(255, 66, 66, 255) : COLOR_WHITE;
   ui_draw_text(s, s->viz_rect.centerX(), 240, speed_str.c_str(), 96 * 2.5, color, "sans-bold");
-  ui_draw_text(s, s->viz_rect.centerX(), 320, s->is_metric ? "km/h" : "mph", 36 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
+  ui_draw_text(s, s->viz_rect.centerX(), 320, s->scene.is_metric ? "km/h" : "mph", 36 * 2.5, COLOR_WHITE_ALPHA(200), "sans-regular");
 }
 
 static void ui_draw_vision_event(UIState *s) {

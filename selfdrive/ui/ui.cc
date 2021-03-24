@@ -150,6 +150,7 @@ static void update_sockets(UIState *s) {
   UIScene &scene = s->scene;
   if (scene.started && sm.updated("controlsState")) {
     scene.controls_state = sm["controlsState"].getControlsState();
+    s->scene.angleSteers  = scene.controls_state.getAngleSteers();
   }
   if (sm.updated("carState")) {
     scene.car_state = sm["carState"].getCarState();

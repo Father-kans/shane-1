@@ -3,10 +3,9 @@
 if [ ! -f "/system/fonts/opensans_regular.ttf" ]; then
 echo "Installing fonts..."
 mount -o rw,remount /system
-cp -f /data/openpilot/installer/bootanimation.zip /system/media/
-cp -rf /data/openpilot/installer/fonts/NanumGothic* /system/fonts/
-cp -rf /data/openpilot/installer/fonts/opensans_* /data/openpilot/selfdrive/assets/fonts/
-cp -rf /data/openpilot/installer/fonts/fonts.xml /system/etc/fonts.xml
+cp -f /data/openpilot/installer/fonts/NanumGothic* /system/fonts/
+cp -f /data/openpilot/installer/fonts/opensans_* /data/openpilot/selfdrive/assets/fonts/
+cp -f /data/openpilot/installer/fonts/fonts.xml /system/etc/fonts.xml
 chmod 644 /system/etc/fonts.xml
 chmod 644 /system/fonts/NanumGothic*
 mount -o ro,remount /system
@@ -20,6 +19,13 @@ if [ "$(getprop persist.sys.locale)" != "ko-KR" ]; then
 
     sleep 2
     reboot
+fi
+
+if [ ! -f "/system/media/boot.zip" ]; then
+echo "installing bootanimation..."
+mount -o rw,remount /system
+cp -f /data/openpilot/installer/bootanimation.zip /system/media/
+mount -o ro,remount /system
 fi
 
 if [ -z "$BASEDIR" ]; then

@@ -10,12 +10,13 @@ from selfdrive.controls.lib.longitudinal_mpc import libmpc_py
 from selfdrive.controls.lib.drive_helpers import MPC_COST_LONG
 from selfdrive.controls.lib.dynamic_follow import DynamicFollow
 from selfdrive.kegman_kans_conf import kegman_kans_conf
+
 # One, two and three bar distances (in s)
 kegman_kans = kegman_kans_conf()
 if "ONE_BAR_DISTANCE" in kegman_kans.conf:
     ONE_BAR_DISTANCE = float(kegman_kans.conf['ONE_BAR_DISTANCE'])
 else:
-    ONE_BAR_DISTANCE = 0.8  # in seconds
+    ONE_BAR_DISTANCE = 0.9  # in seconds
 if "TWO_BAR_DISTANCE" in kegman_kans.conf:
     TWO_BAR_DISTANCE = float(kegman_kans.conf['TWO_BAR_DISTANCE'])
 else:
@@ -83,12 +84,12 @@ class LongitudinalMpc():
     self.new_lead = False
     self.v_rel = 0.0
     self.lastTR = 2
-    self.v_rel = 10
-
     self.last_cloudlog_t = 0.0
-    self.n_its = 0
-    self.duration = 0
-    self.bp_counter = 0
+    self.v_rel = 10
+    self.last_cloudlog_t = 0.0
+    
+    self.bp_counter = 0  
+
 
     kegman_kans = kegman_kans_conf()
     self.oneBarBP = [float(kegman_kans.conf['1barBP0']), float(kegman_kans.conf['1barBP1'])]
@@ -100,6 +101,9 @@ class LongitudinalMpc():
     self.oneBarHwy = [ONE_BAR_DISTANCE, ONE_BAR_DISTANCE+float(kegman_kans.conf['1barHwy'])]
     self.twoBarHwy = [TWO_BAR_DISTANCE, TWO_BAR_DISTANCE+float(kegman_kans.conf['2barHwy'])]
     self.threeBarHwy = [THREE_BAR_DISTANCE, THREE_BAR_DISTANCE+float(kegman_kans.conf['3barHwy'])]
+    
+    self.n_its = 0
+    self.duration = 0
 
   def publish(self, pm):
     if LOG_MPC:

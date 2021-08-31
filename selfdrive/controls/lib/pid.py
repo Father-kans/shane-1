@@ -139,6 +139,10 @@ class LongPIDController:
   def k_d(self):
     return interp(self.speed, self._k_d[0], self._k_d[1])
 
+  @property
+  def k_f(self):
+    return interp(self.speed, self.k_f[0], self.k_f[1])
+
   def _check_saturation(self, control, check_saturation, error):
     saturated = (control < self.neg_limit) or (control > self.pos_limit)
 

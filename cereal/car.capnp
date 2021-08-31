@@ -111,6 +111,19 @@ struct CarEvent @0x9b1657f34caf3ad3 {
     localizerMalfunction @103;
     highCpuUsage @105;
 
+    #Autohold Activate
+    autoHoldActivated @107;
+
+    #Enable greyPanda
+    startupGreyPanda @108;
+
+    #Road speed Limiter
+    slowingDownSpeed @109;
+    slowingDownSpeedSound @110;
+
+    #autoResume
+    accBrakeHold @111;
+
     driverMonitorLowAccDEPRECATED @68;
     radarCanErrorDEPRECATED @15;
     radarCommIssueDEPRECATED @67;
@@ -146,6 +159,7 @@ struct CarState {
   vEgoRaw @17 :Float32;     # unfiltered speed from CAN sensors
   yawRate @22 :Float32;     # best estimate of yaw rate
   standstill @18 :Bool;
+  brakeLights @19 :Bool;
   wheelSpeeds @2 :WheelSpeeds;
 
   # gas pedal, 0.0-1.0
@@ -190,6 +204,12 @@ struct CarState {
   # clutch (manual transmission only)
   clutchPressed @28 :Bool;
 
+  #Kegman 3Bar Distance Profile
+  readdistancelines @38 :Float32;
+  lkMode @39 :Bool;
+  engineRPM @40 :Float32;
+  # Autohold for GM
+  autoHoldActivated @41 :Bool;
   # which packets this state came from
   canMonoTimes @12: List(UInt64);
 
@@ -249,7 +269,6 @@ struct CarState {
   }
 
   errorsDEPRECATED @0 :List(CarEvent.EventName);
-  brakeLightsDEPRECATED @19 :Bool;
 }
 
 # ******* radar state @ 20hz *******
@@ -338,6 +357,9 @@ struct CarControl {
       seatbeltUnbuckled @5;
       speedTooHigh @6;
       ldw @7;
+
+      # Autohold Event
+      autoHoldActivated @8;
     }
 
     enum AudibleAlert {
@@ -350,6 +372,8 @@ struct CarControl {
       chimeWarningRepeat @6;
       chimePrompt @7;
       chimeWarning2Repeat @8;
+      chimeSlowingDownSpeed @9;
+      chimeAutoHoldOn @10;
     }
   }
 
@@ -367,10 +391,13 @@ struct CarParams {
 
   enableGasInterceptor @2 :Bool;
   pcmCruise @3 :Bool;        # is openpilot's state tied to the PCM's cruise state?
+  enableCamera @4 :Bool;     # supprot white panda
   enableDsu @5 :Bool;        # driving support unit
   enableApgs @6 :Bool;       # advanced parking guidance system
   enableBsm @56 :Bool;       # blind spot monitoring
   hasStockCamera @57 :Bool;  # factory LKAS/LDW camera is present
+  # Autohold
+  enableAutoHold @60 :Bool;
 
   minEnableSpeed @7 :Float32;
   minSteerSpeed @8 :Float32;
@@ -433,6 +460,7 @@ struct CarParams {
   fingerprintSource @49: FingerprintSource;
   networkLocation @50 :NetworkLocation;  # Where Panda/C2 is integrated into the car's CAN network
   hasZss @58: Bool;  # true if ZSS is detected
+  doManualSNG @61 :Bool;
 
   struct LateralParams {
     torqueBP @0 :List(Int32);
@@ -457,6 +485,8 @@ struct CarParams {
     kiV @3 :List(Float32);
     deadzoneBP @4 :List(Float32);
     deadzoneV @5 :List(Float32);
+    kfBP @6 :List(Float32);
+    kfV @7 :List(Float32);
   }
 
   struct LateralINDITuning {
@@ -578,6 +608,5 @@ struct CarParams {
     gateway @1;    # Integration at vehicle's CAN gateway
   }
 
-  enableCameraDEPRECATED @4 :Bool;
-  isPandaBlackDEPRECATED @39: Bool;
+  isPandaBlack @39: Bool;
 }

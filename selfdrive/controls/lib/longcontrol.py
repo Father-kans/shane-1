@@ -6,14 +6,17 @@ from selfdrive.controls.lib.pid import LongPIDController
 from selfdrive.controls.lib.dynamic_gas import DynamicGas
 from common.op_params import opParams
 
+from selfdrive.kegman_kans_conf import kegman_kans_conf
+
+kegman_kans = kegman_kans_conf()
 LongCtrlState = log.ControlsState.LongControlState
 
-STOPPING_EGO_SPEED = 0.5
+STOPPING_EGO_SPEED = 0.6
 STOPPING_TARGET_SPEED_OFFSET = 0.01
 STARTING_TARGET_SPEED = 0.5
 BRAKE_THRESHOLD_TO_PID = 0.2
 
-BRAKE_STOPPING_TARGET = 0.5  # apply at least this amount of brake to maintain the vehicle stationary
+BRAKE_STOPPING_TARGET = float(kegman_kans.conf['brakeStoppingTarget'])  # apply at least this amount of brake to maintain the vehicle stationary
 
 RATE = 100.0
 DEFAULT_LONG_LAG = 0.15
@@ -64,6 +67,7 @@ class LongControl():
     self.pid = LongPIDController((CP.longitudinalTuning.kpBP, CP.longitudinalTuning.kpV),
                                  (CP.longitudinalTuning.kiBP, CP.longitudinalTuning.kiV),
                                  ([0], [0]),
+                                 (CP.longitudinalTuning.kfBP, CP.longitudinalTuning.kfV),
                                  rate=RATE,
                                  sat_limit=0.8,
                                  convert=compute_gb)

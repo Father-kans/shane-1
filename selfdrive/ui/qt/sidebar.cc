@@ -2,6 +2,8 @@
 
 #include <QMouseEvent>
 
+#include "selfdrive/common/util.h"
+#include "selfdrive/hardware/hw.h"
 #include "selfdrive/ui/qt/util.h"
 
 void Sidebar::drawMetric(QPainter &p, const QString &label, QColor c, int y) {
@@ -49,6 +51,7 @@ void Sidebar::updateState(const UIState &s) {
   setProperty("netType", network_type[deviceState.getNetworkType()]);
   int strength = (int)deviceState.getNetworkStrength();
   setProperty("netStrength", strength > 0 ? strength + 1 : 0);
+  setProperty("wifiAddr", deviceState.getWifiIpAddress().cStr());
 
   ItemStatus connectStatus;
   auto last_ping = deviceState.getLastAthenaPingTime();
@@ -58,6 +61,8 @@ void Sidebar::updateState(const UIState &s) {
     connectStatus = nanos_since_boot() - last_ping < 80e9 ? ItemStatus{"CONNECT\nONLINE", good_color} : ItemStatus{"CONNECT\nERROR", danger_color};
   }
   setProperty("connectStatus", QVariant::fromValue(connectStatus));
+  m_battery_img = deviceState.getBatteryStatus() == "Charging" ? 1 : 0;
+  m_batteryPercent = deviceState.getBatteryPercent();
 
   ItemStatus tempStatus = {"HIGH\nTEMP", danger_color};
   auto ts = deviceState.getThermalStatus();
@@ -82,7 +87,21 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
   p.setRenderHint(QPainter::Antialiasing);
 
-  p.fillRect(rect(), QColor(57, 57, 57));
+  //battery
+  QRect  rect(45, 293, 96, 36);
+  QRect  bq(50, 298, int(76* m_batteryPercent * 0.01), 25);
+  QBrush bgBrush("#149948");
+  p.fillRect(bq,  bgBrush);
+  p.drawImage(rect, battery_imgs[m_battery_img]);
+
+  p.setPen(Qt::white);
+  configFont(p, "Open Sans", 30, "Regular");
+
+  char battery_str[32];
+
+  const QRect bt = QRect(170, 288, event->rect().width(), 50);
+  snprintf(battery_str, sizeof(battery_str), "%d%%", m_batteryPercent);
+  p.drawText(bt, Qt::AlignLeft, battery_str);
 
   // static imgs
   p.setOpacity(0.65);
@@ -99,13 +118,17 @@ void Sidebar::paintEvent(QPaintEvent *event) {
     x += 37;
   }
 
-  configFont(p, "Open Sans", 35, "Regular");
+  configFont(p, "Open Sans", 30, "Regular");
   p.setPen(QColor(0xff, 0xff, 0xff));
-  const QRect r = QRect(50, 247, 100, 50);
-  p.drawText(r, Qt::AlignCenter, net_type);
+  const QRect r = QRect(45, 237, 210, 50);
+  if(Hardware::EON() && net_type == network_type[cereal::DeviceState::NetworkType::WIFI])
+    p.drawText(r, Qt::AlignLeft, wifi_addr);
+  else
+    p.drawText(r, Qt::AlignLeft, net_type);
 
   // metrics
-  drawMetric(p, temp_status.first, temp_status.second, 338);
-  drawMetric(p, panda_status.first, panda_status.second, 496);
-  drawMetric(p, connect_status.first, connect_status.second, 654);
+  configFont(p, "Open Sans", 35, "Regular");
+  drawMetric(p, temp_status.first, temp_status.second, 355);
+  drawMetric(p, panda_status.first, panda_status.second, 518);
+  drawMetric(p, connect_status.first, connect_status.second, 676);
 }

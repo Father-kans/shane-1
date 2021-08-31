@@ -14,6 +14,7 @@
 #include "selfdrive/hardware/hw.h"
 #include "selfdrive/ui/paint.h"
 #include "selfdrive/ui/qt/qt_window.h"
+#include "selfdrive/ui/dashcam.h"
 
 #define BACKLIGHT_DT 0.05
 #define BACKLIGHT_TS 10.00
@@ -183,7 +184,18 @@ static void update_state(UIState *s) {
   } else if ((s->sm->frame - s->sm->rcv_frame("pandaState")) > 5*UI_FREQ) {
     scene.pandaType = cereal::PandaState::PandaType::UNKNOWN;
   }
+  if (sm.updated("ubloxGnss")) {
+    auto data = sm["ubloxGnss"].getUbloxGnss();
+    if (data.which() == cereal::UbloxGnss::MEASUREMENT_REPORT) {
+      scene.satelliteCount = data.getMeasurementReport().getNumMeas();
+    }
+  }
+  if (sm.updated("gpsLocationExternal")) {
+    scene.gpsAccuracy = sm["gpsLocationExternal"].getGpsLocationExternal().getAccuracy();
+    scene.gps_ext = sm["gpsLocationExternal"].getGpsLocationExternal();
+  }
   if (sm.updated("carParams")) {
+    scene.car_params = sm["carParams"].getCarParams();
     scene.longitudinal_control = sm["carParams"].getCarParams().getOpenpilotLongitudinalControl();
   }
   if (sm.updated("sensorEvents")) {
@@ -288,12 +300,30 @@ static void update_status(UIState *s) {
   started_prev = s->scene.started;
 }
 
+static void update_extras(UIState *s)
+{
+  UIScene &scene = s->scene;
+  SubMaster &sm = *(s->sm);
+
+  if(sm.updated("carControl"))
+    scene.car_control = sm["carControl"].getCarControl();
+
+  if(sm.updated("liveParameters"))
+    scene.live_params = sm["liveParameters"].getLiveParameters();
+
+  if(s->awake)
+  {
+    int touch_x = -1, touch_y = -1;
+    int touched = touch_poll(&(s->touch), &touch_x, &touch_y, 0);
+    dashcam(s, touch_x, touch_y);
+   }
+}
 
 QUIState::QUIState(QObject *parent) : QObject(parent) {
   ui_state.sm = std::make_unique<SubMaster, const std::initializer_list<const char *>>({
     "modelV2", "controlsState", "liveCalibration", "deviceState", "roadCameraState",
     "pandaState", "carParams", "driverMonitoringState", "sensorEvents", "carState", "liveLocationKalman",
-  });
+    "gpsLocationExternal", "radarState", "carControl", "liveParameters", "ubloxGnss"});
   ui_state.pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"laneSpeedButton", "dynamicFollowButton", "modelLongButton"});
 
   ui_state.fb_w = vwp_w;
@@ -311,6 +341,9 @@ QUIState::QUIState(QObject *parent) : QObject(parent) {
   timer = new QTimer(this);
   QObject::connect(timer, &QTimer::timeout, this, &QUIState::update);
   timer->start(0);
+
+  touch_init(&(ui_state.touch));
+  ui_state.lock_on_anim_index = 0;
 }
 
 void QUIState::update() {
@@ -318,6 +351,7 @@ void QUIState::update() {
   update_sockets(&ui_state);
   update_state(&ui_state);
   update_status(&ui_state);
+  update_extras(&ui_state);
   update_vision(&ui_state);
 
   if (ui_state.scene.started != started_prev || ui_state.sm->frame == 1) {

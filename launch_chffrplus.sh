@@ -1,5 +1,83 @@
 #!/usr/bin/bash
 
+if [ ! -f "/data/openpilot/installer/boot_finish" ]; then
+  echo "Installing fonts..."
+  mount -o rw,remount /system
+  cp -f /data/openpilot/installer/fonts/NanumGothic* /system/fonts/
+  cp -f /data/openpilot/installer/fonts/opensans_* /data/openpilot/selfdrive/assets/fonts/
+  cp -f /data/openpilot/installer/fonts/fonts.xml /system/etc/fonts.xml
+  chmod 644 /system/etc/fonts.xml
+  chmod 644 /system/fonts/NanumGothic*
+  cp -f /data/openpilot/installer/bootanimation.zip /system/media/
+  cp -f /data/openpilot/installer/spinner /data/openpilot/selfdrive/ui/qt/
+  sed -i 's/self._AWARENESS_TIME = 35/self._AWARENESS_TIME = 10800/' /data/openpilot/selfdrive/monitoring/driver_monitor.py
+  sed -i 's/self._DISTRACTED_TIME = 11/self._DISTRACTED_TIME = 7200/' /data/openpilot/selfdrive/monitoring/driver_monitor.py
+  sed -i 's/self.face_detected = False/self.face_detected = True/' /data/openpilot/selfdrive/monitoring/driver_monitor.py
+  sed -i 's/self.face_detected = driver/self.face_detected = True # driver/' /data/openpilot/selfdrive/monitoring/driver_monitor.py
+  sed -i 's/DAYS_NO_CONNECTIVITY_MAX = 7/DAYS_NO_CONNECTIVITY_MAX = 999/' /data/openpilot/selfdrive/thermald/thermald.py
+  sed -i 's/DAYS_NO_CONNECTIVITY_PROMPT = 4/DAYS_NO_CONNECTIVITY_PROMPT = 999/' /data/openpilot/thermald/thermald.py
+  chmod 700 /data/openpilot/t.sh
+  chmod 744 /system/media/bootanimation.zip
+  chmod 700 /data/openpilot/selfdrive/ui/qt/spinner
+  sed -i -e 's/\r$//' /data/openpilot/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/manager/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/car/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/ui/*.cc
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/ui/*.h
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/controls/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/controls/lib/*.py
+  sed -i -e 's/\r$//' /data/openpilot/cereal/*.py
+  sed -i -e 's/\r$//' /data/openpilot/cereal/*.h
+  sed -i -e 's/\r$//' /data/openpilot/cereal/*.capnp
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/car/gm/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/hardware/eon/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/hardware/pc/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/hardware/tici/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/ui/qt/*.cc
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/ui/qt/*.h
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/ui/qt/offroad/*.cc
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/ui/qt/widgets/*.cc
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/ui/qt/offroad/*.h
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/ui/qt/widgets/*.h
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/controls/lib/lead_mpc_lib/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/controls/lib/lead_mpc_lib/lib_mpc_export/*.h
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/controls/lib/lead_mpc_lib/*.c
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/controls/lib/lead_mpc_lib/lib_mpc_export/*.c
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/boardd/*.cc
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/boardd/*.pyx
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/boardd/*.h
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/boardd/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/camerad/cameras/*.h
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/camerad/cameras/*.cc
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/camerad/snapshot/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/camerad/*.cc
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/thermald/*.py
+  sed -i -e 's/\r$//' /data/openpilot/selfdrive/athena/*.py
+  sed -i -e 's/\r$//' /data/openpilot/common/*.py
+  sed -i -e 's/\r$//' /data/openpilot/common/*.pyx
+  sed -i -e 's/\r$//' /data/openpilot/common/*.pxd
+  sed -i -e 's/\r$//' /data/openpilot/launch_env.sh
+  sed -i -e 's/\r$//' /data/openpilot/launch_openpilot.sh
+  sed -i -e 's/\r$//' /data/openpilot/Jenkinsfile
+  sed -i -e 's/\r$//' /data/openpilot/SConstruct
+  sed -i -e 's/\r$//' /data/openpilot/t.sh
+  touch /data/openpilot/installer/boot_finish
+
+elif [ "$(getprop persist.sys.locale)" != "ko-KR" ]; then
+
+  setprop persist.sys.locale ko-KR
+  setprop persist.sys.language ko
+  setprop persist.sys.country KR
+  setprop persist.sys.timezone Asia/Seoul
+
+  sleep 2
+  reboot
+else
+  chmod 644 /data/openpilot/installer/boot_finish
+  mount -o ro,remount /system
+fi
+
 if [ -z "$BASEDIR" ]; then
   BASEDIR="/data/openpilot"
 fi

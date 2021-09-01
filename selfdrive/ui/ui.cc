@@ -95,6 +95,15 @@ static void update_leads(UIState *s, const cereal::ModelDataV2::Reader &model) {
   }
 }
 
+static void update_leads_radar(UIState *s, const cereal::RadarState::Reader &radar_state, std::optional<cereal::ModelDataV2::XYZTData::Reader> line) {
+  auto lead_data = radar_state.getLeadOne();
+    if (lead_data.getStatus() && lead_data.getRadar()) {
+      float z = line ? (*line).getZ()[get_path_length_idx(*line, lead_data.getDRel())] : 0.0;
+      // negative because radarState uses left positive convention
+      calib_frame_to_full_frame(s, lead_data.getDRel(), -lead_data.getYRel(), z + 1.22, &s->scene.lead_vertices_radar[0]);
+    }
+}
+
 static void update_line_data(const UIState *s, const cereal::ModelDataV2::XYZTData::Reader &line,
                              float y_off, float z_off, line_vertices_data *pvd, int max_idx) {
   const auto line_x = line.getX(), line_y = line.getY(), line_z = line.getZ();
@@ -235,7 +244,9 @@ static void update_params(UIState *s) {
   const uint64_t frame = s->sm->frame;
   UIScene &scene = s->scene;
   if (frame % (5*UI_FREQ) == 0) {
-    scene.is_metric = Params().getBool("IsMetric");
+    Params params;
+    scene.is_metric = params.getBool("IsMetric");
+    s->custom_lead_mark = true; // params.getBool("CustomLeadMark");
   }
 }
 
@@ -310,6 +321,15 @@ static void update_extras(UIState *s)
 
   if(sm.updated("liveParameters"))
     scene.live_params = sm["liveParameters"].getLiveParameters();
+
+
+  if (sm.updated("radarState") && s->vg) {
+    std::optional<cereal::ModelDataV2::XYZTData::Reader> line;
+    if (sm.rcv_frame("modelV2") > 0) {
+      line = sm["modelV2"].getModelV2().getPosition();
+    }
+    update_leads_radar(s, sm["radarState"].getRadarState(), line);
+  }
 
   if(s->awake)
   {

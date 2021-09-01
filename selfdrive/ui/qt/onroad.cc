@@ -117,22 +117,22 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   main_layout->addWidget(btns_wrapper, 0, Qt::AlignBottom);
 
-  mlButton = new QPushButton("Model Cruise Control");
+  mlButton = new QPushButton("Model CruiseCtrl");
   QObject::connect(mlButton, &QPushButton::clicked, [=]() {
     QUIState::ui_state.scene.mlButtonEnabled = !mlEnabled;
   });
-  mlButton->setFixedWidth(575);
+  mlButton->setFixedWidth(420);
   mlButton->setFixedHeight(150);
   btns_layout->addStretch(4);
   btns_layout->addWidget(mlButton, 0, Qt::AlignHCenter | Qt::AlignBottom);
   btns_layout->addStretch(3);
 
-  dfButton = new QPushButton("DF\nprofile");
+  dfButton = new QPushButton("DF\nMode");
   QObject::connect(dfButton, &QPushButton::clicked, [=]() {
     QUIState::ui_state.scene.dfButtonStatus = dfStatus < 3 ? dfStatus + 1 : 0;  // wrap back around
   });
-  dfButton->setFixedWidth(200);
-  dfButton->setFixedHeight(200);
+  dfButton->setFixedWidth(180);
+  dfButton->setFixedHeight(180);
   btns_layout->addWidget(dfButton, 0, Qt::AlignRight);
 
   setStyleSheet(R"(

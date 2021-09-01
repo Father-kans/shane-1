@@ -181,7 +181,7 @@ bool screen_lock_button_clicked(int touch_x, int touch_y, dashcam_element el) {
 }
 
 bool screen_button_clicked(int touch_x, int touch_y) {
-  if (touch_x >= 1600 && touch_x <= 1850) {
+  if (touch_x >= 1360 && touch_x <= 1610) {
     if (touch_y >= 860 && touch_y <= 1040) {
       return true;
     }
@@ -233,7 +233,7 @@ void draw_lock_button(UIState *s) {
   int btn_w = 150;
   int btn_h = 150;
   //int btn_x = s->fb_w + (bdr_s * 2) - btn_w - (120+bdr_s);
-  int btn_x = s->fb_w - btn_w - (bdr_s * 2) - 200;
+  int btn_x = s->fb_w - btn_w - (bdr_s * 2) - 440;
   int btn_y = (bdr_s * 2) - btn_h;
   //int imgw, imgh;
   float alpha = 0.3f;
@@ -272,8 +272,8 @@ static void screen_draw_button(UIState *s, int touch_x, int touch_y) {
 
     int btn_w = 160;
     int btn_h = 160;
-    int btn_x = s->fb_w - btn_w - (bdr_s * 2);
-    int btn_y = s->fb_h - btn_h - 30;
+    int btn_x = s->fb_w - btn_w - (bdr_s * 10);
+    int btn_y = s->fb_h - btn_h - 70;
     nvgBeginPath(s->vg);
     nvgRoundedRect(s->vg, btn_x, btn_y, btn_w, btn_h, 100);
     nvgStrokeColor(s->vg, nvgRGBA(255,255,255,80));
@@ -331,7 +331,7 @@ void screen_toggle_lock() {
 bool dashcam( UIState *s, int touch_x, int touch_y ) {
 
   bool touched = false;
-  
+
   screen_draw_button(s, touch_x, touch_y);
   if (screen_button_clicked(touch_x,touch_y)) {
     click_elapsed_time = get_time() - click_time;
@@ -356,6 +356,6 @@ bool dashcam( UIState *s, int touch_x, int touch_y ) {
     stop_capture();
   }
   s->scene.recording = (captureState != CAPTURE_STATE_NOT_CAPTURING);
-  
+
   return touched;
 }
